@@ -102,8 +102,15 @@
 
 .botleft,
 .botright {
-    flex: 1;
     background-color: lightblue;
+}
+
+.botleft {
+    flex: 2;
+}
+
+.botright {
+    flex: 1;
 }
 
 .appfooter {
