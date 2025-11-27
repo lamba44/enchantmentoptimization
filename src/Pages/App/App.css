@@ -30,8 +30,9 @@
 }
 
 .intro-desc {
-    font-size: 16px;
-    color: #dcdcdc;
+    font-size: 18px;
+    margin: 0 auto;
+    width: 70%;
     background-color: transparent;
     line-height: 1.6;
     text-align: center;
@@ -68,15 +69,8 @@
 
 .badge.java {
     background-color: #1d5c99;
-    color: #fff;
 }
 
-.badge.pwp {
-    background-color: #8055cc;
-    color: #fff;
-}
-
-/* Guide Button */
 .guidebtn {
     display: inline-block;
     margin: 0 auto;
@@ -84,9 +78,9 @@
     padding: 10px 24px;
 
     background-color: #55aa55;
-    color: #fff;
     font-weight: bold;
     text-decoration: none;
+    text-align: center;
     border-radius: 6px;
     border: 2px solid #3d8f3d;
 
@@ -95,7 +89,6 @@
     transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
-/* Minecraft-like hover */
 .guidebtn:hover {
     background-color: #66cc66;
     transform: translateY(-2px);
@@ -119,4 +112,26 @@
 
 .footertext {
     color: #fafafa;
+}
+
+@media (max-width: 700px) {
+    .appheader {
+        margin: 36px 0;
+        font-size: 24px;
+    }
+
+    .intro-desc {
+        font-size: 14px;
+        width: 85%;
+    }
+}
+
+@media (max-width: 425px) {
+    .guidebtn {
+        font-size: 14px;
+        display: inline-block;
+        margin: 0 auto;
+        margin-top: 6px;
+        padding: 6px 16px;
+    }
 }

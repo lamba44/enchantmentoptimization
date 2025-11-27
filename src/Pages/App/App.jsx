@@ -12,7 +12,7 @@ const App = () => {
                             An enchanting calculator that helps you find the
                             <span className="highlight">
                                 {" "}
-                                most optimal anvil order
+                                most optimal enchanting order{" "}
                             </span>
                             minimizing XP cost and avoiding the dreaded
                             <span className="dangerword">
@@ -24,16 +24,12 @@ const App = () => {
 
                         <div className="badges">
                             <span className="badge java">
-                                Java Edition Only
-                            </span>
-                            <span className="badge pwp">
-                                Assumes items have not been used in an anvil
-                                before unless changed
+                                Java Edition Only!
                             </span>
                         </div>
 
                         <a href="/guide" className="guidebtn">
-                            How It Works
+                            Learn How It Works
                         </a>
                     </div>
                 </div>
