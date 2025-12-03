@@ -6,7 +6,7 @@
 }
 
 .bentogrid {
-    height: 100vh;
+    height: auto;
     width: 76vw;
     display: flex;
     flex-direction: column;
@@ -189,6 +189,177 @@
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
+}
+
+/* Sacrifice mode buttons */
+.sac-mode-row {
+    margin-top: 18px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.sac-mode-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background: #222;
+    color: #fafafa;
+    cursor: pointer;
+}
+
+.sac-mode-btn.active {
+    background: #55aa55;
+}
+
+/* Sacrifice item editor */
+.sac-item-editor {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sac-item-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.sac-label {
+    min-width: 110px;
+    color: #ddd;
+}
+
+.sac-item-input {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #0f0c12;
+    color: #fafafa;
+}
+
+.clear-sac-item {
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #333;
+    color: #fafafa;
+    cursor: pointer;
+}
+
+/* Enchant rows for sacrifice item */
+.sac-enchants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.enchant-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.enchant-toggle {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.enchant-name {
+    min-width: 140px;
+}
+
+.enchant-level {
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #0f0c12;
+    color: #fafafa;
+    border: 1px solid #444;
+}
+
+/* Books editor */
+.sac-books-editor {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.books-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.add-book-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #222;
+    border: 1px solid #555;
+    color: #fafafa;
+    cursor: pointer;
+}
+
+.books-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.book-entry {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.book-enchant-select,
+.book-level-select {
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #0f0c12;
+    color: #fafafa;
+    border: 1px solid #444;
+}
+
+.remove-book-btn {
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: #551111;
+    border: 1px solid #773333;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* small helper text when no books */
+.no-books {
+    color: #ccc;
+    font-size: 13px;
+}
+
+/* small responsive tweak so inputs don't overflow */
+.sac-item-row input,
+.book-enchant-select,
+.book-level-select,
+.enchant-level {
+    min-width: 120px;
+}
+
+/* keep visual spacing consistent with your existing design */
+.sac-mode-row,
+.sac-item-editor,
+.sac-books-editor {
+    width: 100%;
 }
 
 .botright {
