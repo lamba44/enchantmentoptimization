@@ -6,11 +6,15 @@ import { itemEnchantMap, conflictMap } from "./../../data/enchantmentData";
 const App = () => {
     const [selectedCat, setSelectedCat] = React.useState(null);
     const [selectedSub, setSelectedSub] = React.useState(null);
-    // --- Updated default state for sacrifice UI ---
-    const [sacMode, setSacMode] = React.useState(null); // Start with no mode selected
+    // --- Updated sacrifice modes ---
+    const [sacMode, setSacMode] = React.useState(null); // null | "Books" | "Item & Books"
     const [sacItem, setSacItem] = React.useState(null);
     const [sacItemEnchants, setSacItemEnchants] = React.useState({});
-    const [sacBooks, setSacBooks] = React.useState([]);
+    const [sacBooksEnchants, setSacBooksEnchants] = React.useState({});
+    // Added state for existing target item enchantments
+    const [existingEnchantsChecked, setExistingEnchantsChecked] =
+        React.useState(false);
+    const [targetItemEnchants, setTargetItemEnchants] = React.useState({});
 
     // Get current enchantments based on selected item
     const currentEnchants = selectedSub
@@ -18,8 +22,8 @@ const App = () => {
         : [];
 
     // Helper function to check if an enchantment has conflicts with selected ones
-    const hasConflict = (enchName) => {
-        for (const selectedEnch in sacItemEnchants) {
+    const hasConflict = (enchName, enchantments) => {
+        for (const selectedEnch in enchantments) {
             if (conflictMap[selectedEnch]?.includes(enchName)) {
                 return true;
             }
@@ -35,14 +39,16 @@ const App = () => {
             // Reset sacrifice data when target is cleared
             setSacItem(null);
             setSacItemEnchants({});
-            setSacBooks([]);
-            setSacMode(null); // Reset sacMode when target is cleared
+            setSacBooksEnchants({});
+            setSacMode(null);
+            setExistingEnchantsChecked(false);
+            setTargetItemEnchants({});
         }
     }, [selectedSub]);
 
-    // --- handlers for sac item enchants ---
-    const toggleSacEnchant = (ename) => {
-        setSacItemEnchants((prev) => {
+    // --- handlers for enchantments (generic) ---
+    const toggleEnchant = (ename, setEnchants, enchants) => {
+        setEnchants((prev) => {
             const copy = { ...prev };
             // If enabling, remove any conflicting enchantments
             if (!copy[ename]) {
@@ -60,8 +66,8 @@ const App = () => {
         });
     };
 
-    const setSacEnchantLevel = (ename, lvl) => {
-        setSacItemEnchants((prev) => {
+    const setEnchantLevel = (ename, lvl, setEnchants) => {
+        setEnchants((prev) => {
             const copy = { ...prev };
             if (lvl <= 0) {
                 delete copy[ename];
@@ -76,28 +82,6 @@ const App = () => {
             }
             return copy;
         });
-    };
-
-    // --- handlers for books ---
-    const addBook = () => {
-        const newBook = {
-            id: Date.now() + Math.random(),
-            enchant: currentEnchants.length
-                ? currentEnchants[0].name
-                : "Custom",
-            level: 1,
-        };
-        setSacBooks((prev) => [...prev, newBook]);
-    };
-
-    const updateBook = (id, field, value) => {
-        setSacBooks((prev) =>
-            prev.map((b) => (b.id === id ? { ...b, [field]: value } : b))
-        );
-    };
-
-    const removeBook = (id) => {
-        setSacBooks((prev) => prev.filter((b) => b.id !== id));
     };
 
     return (
@@ -217,100 +201,53 @@ const App = () => {
                                                 </button>
                                             ))}
                                     </div>
-                                    {/* Slots ALWAYS visible */}
-                                    <div className="slots-area">
-                                        <div className="slot target-slot">
-                                            {selectedSub || "Select item"}
-                                        </div>
-                                        <div className="plus-sign">+</div>
-                                        <div
-                                            className="slot sacrifice-slot"
-                                            title="Select sacrifice mode below"
-                                        >
-                                            {selectedSub ? (
-                                                sacMode ? (
-                                                    <>
-                                                        {sacMode === "Item" &&
-                                                            (sacItem ||
-                                                                "Same item type")}
-                                                        {sacMode === "Books" &&
-                                                            "Books"}
-                                                        {sacMode ===
-                                                            "Item & Books" && (
-                                                            <>
-                                                                {sacItem ||
-                                                                    "Same item + books"}
-                                                            </>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    "Select mode"
-                                                )
-                                            ) : (
-                                                "Select target first"
-                                            )}
-                                        </div>
-                                    </div>
-                                    {/* --- Sacrifice UI only appears when target is selected --- */}
+
+                                    {/* Existing enchantments checkbox for target item */}
                                     {selectedSub && (
-                                        <>
-                                            <div className="sac-mode-row">
-                                                {[
-                                                    "Item",
-                                                    "Books",
-                                                    "Item & Books",
-                                                ].map((m) => (
-                                                    <button
-                                                        key={m}
-                                                        className={`sac-mode-btn ${
-                                                            sacMode === m
-                                                                ? "active"
-                                                                : ""
-                                                        }`}
-                                                        onClick={() =>
-                                                            setSacMode(m)
+                                        <div className="existing-enchants-section">
+                                            <label className="existing-enchants-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        existingEnchantsChecked
+                                                    }
+                                                    onChange={(e) => {
+                                                        setExistingEnchantsChecked(
+                                                            e.target.checked
+                                                        );
+                                                        if (!e.target.checked) {
+                                                            setTargetItemEnchants(
+                                                                {}
+                                                            );
                                                         }
-                                                    >
-                                                        {m}
-                                                    </button>
-                                                ))}
-                                            </div>
+                                                    }}
+                                                />
+                                                <span>
+                                                    Existing Enchantments on
+                                                    Target Item
+                                                </span>
+                                            </label>
 
-                                            {/* Prompt to select mode if none is selected */}
-                                            {!sacMode && (
-                                                <div className="mode-prompt">
-                                                    Please select a sacrifice
-                                                    mode above
-                                                </div>
-                                            )}
-
-                                            {/* Sacrifice item editor (shown when mode includes Item) */}
-                                            {(sacMode === "Item" ||
-                                                sacMode === "Item & Books") && (
-                                                <div className="sac-item-editor">
-                                                    <div className="sac-item-header">
-                                                        <div className="sac-item-title">
-                                                            Sacrifice Item:{" "}
-                                                            {sacItem}
-                                                        </div>
-                                                        <div className="sac-item-subtitle">
-                                                            Select enchantments
-                                                            on the sacrifice{" "}
-                                                            {sacItem}
-                                                        </div>
+                                            {existingEnchantsChecked && (
+                                                <div className="existing-enchants-grid">
+                                                    <div className="existing-enchants-title">
+                                                        Select existing
+                                                        enchantments on your{" "}
+                                                        {selectedSub}:
                                                     </div>
                                                     <div className="sac-enchants-grid">
                                                         {currentEnchants.map(
                                                             (ench) => {
                                                                 const selectedLevel =
-                                                                    sacItemEnchants[
+                                                                    targetItemEnchants[
                                                                         ench
                                                                             .name
                                                                     ] || 0;
                                                                 const isDisabled =
                                                                     !selectedLevel &&
                                                                     hasConflict(
-                                                                        ench.name
+                                                                        ench.name,
+                                                                        targetItemEnchants
                                                                     );
                                                                 const isActive =
                                                                     !!selectedLevel;
@@ -333,8 +270,10 @@ const App = () => {
                                                                             if (
                                                                                 !isDisabled
                                                                             ) {
-                                                                                toggleSacEnchant(
-                                                                                    ench.name
+                                                                                toggleEnchant(
+                                                                                    ench.name,
+                                                                                    setTargetItemEnchants,
+                                                                                    targetItemEnchants
                                                                                 );
                                                                             }
                                                                         }}
@@ -383,9 +322,10 @@ const App = () => {
                                                                                                 e
                                                                                             ) => {
                                                                                                 e.stopPropagation();
-                                                                                                setSacEnchantLevel(
+                                                                                                setEnchantLevel(
                                                                                                     ench.name,
-                                                                                                    lvl
+                                                                                                    lvl,
+                                                                                                    setTargetItemEnchants
                                                                                                 );
                                                                                             }}
                                                                                         >
@@ -404,147 +344,432 @@ const App = () => {
                                                     </div>
                                                 </div>
                                             )}
-                                            {/* Books editor (shown when mode includes Books) */}
-                                            {(sacMode === "Books" ||
-                                                sacMode === "Item & Books") && (
+                                        </div>
+                                    )}
+
+                                    {/* Slots ALWAYS visible */}
+                                    <div className="slots-area">
+                                        <div className="slot target-slot">
+                                            {selectedSub || "Select item"}
+                                        </div>
+                                        <div className="plus-sign">+</div>
+                                        <div
+                                            className="slot sacrifice-slot"
+                                            title="Select sacrifice mode below"
+                                        >
+                                            {selectedSub ? (
+                                                sacMode ? (
+                                                    <>
+                                                        {sacMode === "Books" &&
+                                                            "Enchanted Books"}
+                                                        {sacMode ===
+                                                            "Item & Books" && (
+                                                            <>
+                                                                {sacItem ||
+                                                                    "Same item + books"}
+                                                            </>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    "Select mode"
+                                                )
+                                            ) : (
+                                                "Select target first"
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* --- Sacrifice UI only appears when target is selected --- */}
+                                    {selectedSub && (
+                                        <>
+                                            <div className="sac-mode-row">
+                                                {["Books", "Item & Books"].map(
+                                                    (m) => (
+                                                        <button
+                                                            key={m}
+                                                            className={`sac-mode-btn ${
+                                                                sacMode === m
+                                                                    ? "active"
+                                                                    : ""
+                                                            }`}
+                                                            onClick={() =>
+                                                                setSacMode(m)
+                                                            }
+                                                        >
+                                                            {m}
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
+
+                                            {/* Prompt to select mode if none is selected */}
+                                            {!sacMode && (
+                                                <div className="mode-prompt">
+                                                    Please select a sacrifice
+                                                    mode above
+                                                </div>
+                                            )}
+
+                                            {/* Books editor (shown when mode is Books) */}
+                                            {sacMode === "Books" && (
                                                 <div className="sac-books-editor">
                                                     <div className="books-header">
                                                         <div className="books-title">
-                                                            Enchanted Books:
+                                                            Books to use:
                                                         </div>
-                                                        <button
-                                                            className="add-book-btn"
-                                                            onClick={addBook}
-                                                        >
-                                                            Add Book
-                                                        </button>
                                                     </div>
                                                     <div className="books-grid">
-                                                        {sacBooks.length ===
-                                                            0 && (
-                                                            <div className="no-books">
-                                                                Click "Add Book"
-                                                                to begin
-                                                            </div>
-                                                        )}
-                                                        {sacBooks.map((b) => {
-                                                            const maxLevel =
-                                                                (
-                                                                    currentEnchants.find(
-                                                                        (e) =>
-                                                                            e.name ===
-                                                                            b.enchant
-                                                                    ) || {
-                                                                        max: 5,
-                                                                    }
-                                                                ).max || 5;
-                                                            return (
-                                                                <div
-                                                                    className="book-card"
-                                                                    key={b.id}
-                                                                >
-                                                                    <div className="book-header">
-                                                                        <span>
-                                                                            Book{" "}
-                                                                            {sacBooks.indexOf(
-                                                                                b
-                                                                            ) +
-                                                                                1}
-                                                                        </span>
-                                                                        <button
-                                                                            className="remove-book-btn"
-                                                                            onClick={() =>
-                                                                                removeBook(
-                                                                                    b.id
-                                                                                )
+                                                        {currentEnchants.map(
+                                                            (ench) => {
+                                                                const selectedLevel =
+                                                                    sacBooksEnchants[
+                                                                        ench
+                                                                            .name
+                                                                    ] || 0;
+                                                                const isDisabled =
+                                                                    !selectedLevel &&
+                                                                    hasConflict(
+                                                                        ench.name,
+                                                                        sacBooksEnchants
+                                                                    );
+                                                                const isActive =
+                                                                    !!selectedLevel;
+
+                                                                return (
+                                                                    <div
+                                                                        key={
+                                                                            ench.name
+                                                                        }
+                                                                        className={`enchant-card ${
+                                                                            isActive
+                                                                                ? "active"
+                                                                                : ""
+                                                                        } ${
+                                                                            isDisabled
+                                                                                ? "disabled"
+                                                                                : ""
+                                                                        }`}
+                                                                        onClick={() => {
+                                                                            if (
+                                                                                !isDisabled
+                                                                            ) {
+                                                                                toggleEnchant(
+                                                                                    ench.name,
+                                                                                    setSacBooksEnchants,
+                                                                                    sacBooksEnchants
+                                                                                );
                                                                             }
-                                                                        >
-                                                                            ✕
-                                                                        </button>
-                                                                    </div>
-                                                                    <div className="book-enchant-selector">
-                                                                        <select
-                                                                            className="book-enchant-select"
-                                                                            value={
-                                                                                b.enchant
-                                                                            }
-                                                                            onChange={(
-                                                                                e
-                                                                            ) =>
-                                                                                updateBook(
-                                                                                    b.id,
-                                                                                    "enchant",
-                                                                                    e
-                                                                                        .target
-                                                                                        .value
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            {currentEnchants.map(
-                                                                                (
-                                                                                    e
-                                                                                ) => (
-                                                                                    <option
-                                                                                        key={
-                                                                                            e.name
-                                                                                        }
-                                                                                        value={
-                                                                                            e.name
-                                                                                        }
-                                                                                    >
-                                                                                        {
-                                                                                            e.name
-                                                                                        }
-                                                                                    </option>
-                                                                                )
-                                                                            )}
-                                                                        </select>
-                                                                    </div>
-                                                                    <div className="level-selector">
-                                                                        {Array.from(
-                                                                            {
-                                                                                length: maxLevel,
-                                                                            },
-                                                                            (
-                                                                                _,
-                                                                                i
-                                                                            ) =>
-                                                                                i +
-                                                                                1
-                                                                        ).map(
-                                                                            (
-                                                                                lvl
-                                                                            ) => (
-                                                                                <button
-                                                                                    key={
-                                                                                        lvl
-                                                                                    }
-                                                                                    className={`level-btn ${
-                                                                                        b.level ===
-                                                                                        lvl
-                                                                                            ? "active"
-                                                                                            : ""
-                                                                                    }`}
-                                                                                    onClick={() =>
-                                                                                        updateBook(
-                                                                                            b.id,
-                                                                                            "level",
-                                                                                            lvl
-                                                                                        )
-                                                                                    }
-                                                                                >
+                                                                        }}
+                                                                    >
+                                                                        <div className="enchant-header">
+                                                                            <div className="enchant-name">
+                                                                                {
+                                                                                    ench.name
+                                                                                }
+                                                                            </div>
+                                                                            {isActive && (
+                                                                                <div className="enchant-level-indicator">
                                                                                     {
-                                                                                        lvl
+                                                                                        selectedLevel
                                                                                     }
-                                                                                </button>
-                                                                            )
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        {isActive && (
+                                                                            <div className="level-selector">
+                                                                                {Array.from(
+                                                                                    {
+                                                                                        length: ench.max,
+                                                                                    },
+                                                                                    (
+                                                                                        _,
+                                                                                        i
+                                                                                    ) =>
+                                                                                        i +
+                                                                                        1
+                                                                                ).map(
+                                                                                    (
+                                                                                        lvl
+                                                                                    ) => (
+                                                                                        <button
+                                                                                            key={
+                                                                                                lvl
+                                                                                            }
+                                                                                            className={`level-btn ${
+                                                                                                selectedLevel ===
+                                                                                                lvl
+                                                                                                    ? "active"
+                                                                                                    : ""
+                                                                                            }`}
+                                                                                            onClick={(
+                                                                                                e
+                                                                                            ) => {
+                                                                                                e.stopPropagation();
+                                                                                                setEnchantLevel(
+                                                                                                    ench.name,
+                                                                                                    lvl,
+                                                                                                    setSacBooksEnchants
+                                                                                                );
+                                                                                            }}
+                                                                                        >
+                                                                                            {
+                                                                                                lvl
+                                                                                            }
+                                                                                        </button>
+                                                                                    )
+                                                                                )}
+                                                                            </div>
                                                                         )}
                                                                     </div>
-                                                                </div>
-                                                            );
-                                                        })}
+                                                                );
+                                                            }
+                                                        )}
                                                     </div>
                                                 </div>
+                                            )}
+
+                                            {/* Item & Books editor */}
+                                            {sacMode === "Item & Books" && (
+                                                <>
+                                                    {/* Sacrifice Item Section */}
+                                                    <div className="sac-item-editor">
+                                                        <div className="sac-item-header">
+                                                            <div className="sac-item-title">
+                                                                Sacrifice Item:{" "}
+                                                                {sacItem}
+                                                            </div>
+                                                            <div className="sac-item-subtitle">
+                                                                Select
+                                                                enchantments on
+                                                                the sacrifice
+                                                                item
+                                                            </div>
+                                                        </div>
+                                                        <div className="sac-enchants-grid">
+                                                            {currentEnchants.map(
+                                                                (ench) => {
+                                                                    const selectedLevel =
+                                                                        sacItemEnchants[
+                                                                            ench
+                                                                                .name
+                                                                        ] || 0;
+                                                                    const isDisabled =
+                                                                        !selectedLevel &&
+                                                                        hasConflict(
+                                                                            ench.name,
+                                                                            sacItemEnchants
+                                                                        );
+                                                                    const isActive =
+                                                                        !!selectedLevel;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={
+                                                                                ench.name
+                                                                            }
+                                                                            className={`enchant-card ${
+                                                                                isActive
+                                                                                    ? "active"
+                                                                                    : ""
+                                                                            } ${
+                                                                                isDisabled
+                                                                                    ? "disabled"
+                                                                                    : ""
+                                                                            }`}
+                                                                            onClick={() => {
+                                                                                if (
+                                                                                    !isDisabled
+                                                                                ) {
+                                                                                    toggleEnchant(
+                                                                                        ench.name,
+                                                                                        setSacItemEnchants,
+                                                                                        sacItemEnchants
+                                                                                    );
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <div className="enchant-header">
+                                                                                <div className="enchant-name">
+                                                                                    {
+                                                                                        ench.name
+                                                                                    }
+                                                                                </div>
+                                                                                {isActive && (
+                                                                                    <div className="enchant-level-indicator">
+                                                                                        {
+                                                                                            selectedLevel
+                                                                                        }
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            {isActive && (
+                                                                                <div className="level-selector">
+                                                                                    {Array.from(
+                                                                                        {
+                                                                                            length: ench.max,
+                                                                                        },
+                                                                                        (
+                                                                                            _,
+                                                                                            i
+                                                                                        ) =>
+                                                                                            i +
+                                                                                            1
+                                                                                    ).map(
+                                                                                        (
+                                                                                            lvl
+                                                                                        ) => (
+                                                                                            <button
+                                                                                                key={
+                                                                                                    lvl
+                                                                                                }
+                                                                                                className={`level-btn ${
+                                                                                                    selectedLevel ===
+                                                                                                    lvl
+                                                                                                        ? "active"
+                                                                                                        : ""
+                                                                                                }`}
+                                                                                                onClick={(
+                                                                                                    e
+                                                                                                ) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    setEnchantLevel(
+                                                                                                        ench.name,
+                                                                                                        lvl,
+                                                                                                        setSacItemEnchants
+                                                                                                    );
+                                                                                                }}
+                                                                                            >
+                                                                                                {
+                                                                                                    lvl
+                                                                                                }
+                                                                                            </button>
+                                                                                        )
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Books Section */}
+                                                    <div className="sac-books-editor">
+                                                        <div className="books-header">
+                                                            <div className="books-title">
+                                                                Books to use:
+                                                            </div>
+                                                        </div>
+                                                        <div className="books-grid">
+                                                            {currentEnchants.map(
+                                                                (ench) => {
+                                                                    const selectedLevel =
+                                                                        sacBooksEnchants[
+                                                                            ench
+                                                                                .name
+                                                                        ] || 0;
+                                                                    const isDisabled =
+                                                                        !selectedLevel &&
+                                                                        hasConflict(
+                                                                            ench.name,
+                                                                            sacBooksEnchants
+                                                                        );
+                                                                    const isActive =
+                                                                        !!selectedLevel;
+
+                                                                    return (
+                                                                        <div
+                                                                            key={
+                                                                                ench.name
+                                                                            }
+                                                                            className={`enchant-card ${
+                                                                                isActive
+                                                                                    ? "active"
+                                                                                    : ""
+                                                                            } ${
+                                                                                isDisabled
+                                                                                    ? "disabled"
+                                                                                    : ""
+                                                                            }`}
+                                                                            onClick={() => {
+                                                                                if (
+                                                                                    !isDisabled
+                                                                                ) {
+                                                                                    toggleEnchant(
+                                                                                        ench.name,
+                                                                                        setSacBooksEnchants,
+                                                                                        sacBooksEnchants
+                                                                                    );
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <div className="enchant-header">
+                                                                                <div className="enchant-name">
+                                                                                    {
+                                                                                        ench.name
+                                                                                    }
+                                                                                </div>
+                                                                                {isActive && (
+                                                                                    <div className="enchant-level-indicator">
+                                                                                        {
+                                                                                            selectedLevel
+                                                                                        }
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            {isActive && (
+                                                                                <div className="level-selector">
+                                                                                    {Array.from(
+                                                                                        {
+                                                                                            length: ench.max,
+                                                                                        },
+                                                                                        (
+                                                                                            _,
+                                                                                            i
+                                                                                        ) =>
+                                                                                            i +
+                                                                                            1
+                                                                                    ).map(
+                                                                                        (
+                                                                                            lvl
+                                                                                        ) => (
+                                                                                            <button
+                                                                                                key={
+                                                                                                    lvl
+                                                                                                }
+                                                                                                className={`level-btn ${
+                                                                                                    selectedLevel ===
+                                                                                                    lvl
+                                                                                                        ? "active"
+                                                                                                        : ""
+                                                                                                }`}
+                                                                                                onClick={(
+                                                                                                    e
+                                                                                                ) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    setEnchantLevel(
+                                                                                                        ench.name,
+                                                                                                        lvl,
+                                                                                                        setSacBooksEnchants
+                                                                                                    );
+                                                                                                }}
+                                                                                            >
+                                                                                                {
+                                                                                                    lvl
+                                                                                                }
+                                                                                            </button>
+                                                                                        )
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </>
                                             )}
                                         </>
                                     )}

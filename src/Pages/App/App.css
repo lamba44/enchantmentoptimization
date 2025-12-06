@@ -1,10 +1,10 @@
+/* App.css */
 .appheader {
     margin: 48px 0;
     text-align: center;
     font-size: 32px;
     color: #fafafa;
 }
-
 .bentogrid {
     height: auto;
     width: 76vw;
@@ -12,11 +12,9 @@
     flex-direction: column;
     gap: 24px;
 }
-
 .topsect {
     flex: 1;
 }
-
 .introbox {
     height: 100%;
     padding: 32px;
@@ -24,11 +22,9 @@
     flex-direction: column;
     justify-content: center;
     gap: 24px;
-
     background-color: #110d1d;
     border-radius: 16px;
 }
-
 .intro-desc {
     font-size: 18px;
     margin: 0 auto;
@@ -37,19 +33,16 @@
     line-height: 1.6;
     text-align: center;
 }
-
 .highlight {
     color: #55ff55;
     font-weight: bold;
     background-color: transparent;
 }
-
 .dangerword {
     color: #ff5555;
     font-weight: bold;
     background-color: transparent;
 }
-
 .badges {
     display: flex;
     flex-wrap: wrap;
@@ -57,7 +50,6 @@
     gap: 12px;
     background-color: transparent;
 }
-
 .badge {
     padding: 6px 12px;
     border-radius: 6px;
@@ -66,50 +58,40 @@
     text-shadow: 1px 1px 0px #000;
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
-
 .badge.java {
     background-color: #1d5c99;
 }
-
 .guidebtn {
     display: inline-block;
     margin: 0 auto;
     margin-top: 12px;
     padding: 10px 24px;
-
     background-color: #55aa55;
     font-weight: bold;
     text-decoration: none;
     text-align: center;
     border-radius: 6px;
     border: 2px solid #3d8f3d;
-
     text-shadow: 1px 1px 0px #000;
-
     transition: transform 0.15s ease, background-color 0.15s ease;
 }
-
 .guidebtn:hover {
     background-color: #66cc66;
     transform: translateY(-2px);
 }
-
 .bottomsect {
     flex: 2;
     display: flex;
     gap: 24px;
 }
-
 .botleft {
     flex: 2;
 }
-
 .cat-select {
     display: flex;
     gap: 12px;
     margin-bottom: 16px;
 }
-
 .cat-btn {
     padding: 6px 16px;
     background-color: #222;
@@ -118,17 +100,14 @@
     cursor: pointer;
     border-radius: 6px;
 }
-
 .cat-btn.active {
     background-color: #55aa55;
 }
-
 .subcat-select {
     display: flex;
     gap: 12px;
     margin-bottom: 20px;
 }
-
 .subcat-btn {
     padding: 6px 16px;
     background-color: #333;
@@ -137,17 +116,14 @@
     cursor: pointer;
     border-radius: 6px;
 }
-
 .subcat-btn.active {
     background-color: #1d5c99;
 }
-
 .slots-area {
     display: flex;
     align-items: center;
     gap: 24px;
 }
-
 .slot {
     width: 120px;
     height: 120px;
@@ -161,16 +137,13 @@
     text-align: center;
     font-size: 14px;
 }
-
 .slot.empty {
     opacity: 0.6;
 }
-
 .plus-sign {
     font-size: 32px;
     color: #fafafa;
 }
-
 .subcat-container {
     min-height: 48px;
     display: flex;
@@ -178,19 +151,16 @@
     align-items: center;
     transition: opacity 0.12s ease, transform 0.12s ease;
 }
-
 .subcat-container.hidden {
     opacity: 0;
     pointer-events: none;
     transform: translateY(-4px);
 }
-
 .subcat-container.visible {
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);
 }
-
 /* Sacrifice mode buttons */
 .sac-mode-row {
     margin-top: 18px;
@@ -198,7 +168,6 @@
     gap: 10px;
     align-items: center;
 }
-
 .sac-mode-btn {
     padding: 6px 16px;
     background-color: #222;
@@ -207,11 +176,9 @@
     cursor: pointer;
     border-radius: 6px;
 }
-
 .sac-mode-btn.active {
     background-color: #55aa55;
 }
-
 .mode-prompt {
     margin: 16px 0;
     padding: 12px;
@@ -219,32 +186,50 @@
     text-align: center;
     font-style: italic;
 }
-
+/* Existing enchantments section */
+.existing-enchants-section {
+    margin: 20px 0;
+}
+.existing-enchants-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fafafa;
+    cursor: pointer;
+}
+.existing-enchants-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+.existing-enchants-title {
+    margin: 12px 0 8px;
+    color: #aaa;
+    font-size: 14px;
+}
+.existing-enchants-grid {
+    margin-top: 8px;
+}
 .sac-item-editor {
     margin-top: 16px;
 }
-
 .sac-item-header {
     margin-bottom: 16px;
 }
-
 .sac-item-title {
     font-style: italic;
     margin-bottom: 4px;
 }
-
 .sac-item-subtitle {
     color: #aaa;
     font-size: 14px;
 }
-
 /* Grid layout for enchantment cards */
 .sac-enchants-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 12px;
 }
-
 .enchant-card {
     border: 2px solid #666666;
     border-radius: 8px;
@@ -252,31 +237,25 @@
     cursor: pointer;
     transition: all 0.2s ease;
 }
-
 .enchant-card:hover {
     border-color: #c0c0c0;
 }
-
 .enchant-card.active {
     border-color: #55aa55;
 }
-
 .enchant-card.disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
-
 .enchant-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
 }
-
 /* .enchant-name {
     color: #fafafa;
 } */
-
 .enchant-level-indicator {
     background: #55aa55;
     color: white;
@@ -289,14 +268,12 @@
     font-size: 12px;
     font-weight: 700;
 }
-
 /* Level selector with buttons instead of dropdown */
 .level-selector {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
 }
-
 .level-btn {
     width: 30px;
     height: 30px;
@@ -311,148 +288,61 @@
     font-weight: bold;
     transition: all 0.2s ease;
 }
-
 .level-btn:hover {
     background: #333;
 }
-
 .level-btn.active {
     background: #55aa55;
     border-color: #449944;
     transform: scale(1.1);
 }
-
-/* Books editor - Updated design */
+/* Books editor */
 .sac-books-editor {
     margin-top: 16px;
 }
-
 .books-header {
     display: flex;
     justify-content: left;
     align-items: center;
     margin-bottom: 16px;
 }
-
 .books-title {
     font-style: italic;
 }
-
-.add-book-btn {
-    margin-left: 32px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #7b62c9, #9b82e9);
-    border: none;
-    color: #fafafa;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-.add-book-btn:hover {
-    transform: translateY(-2px);
-}
-
 /* Grid layout for books */
 .books-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
 }
-
-.book-card {
-    border: 1px solid #666666;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.2s ease;
-}
-
-.book-card:hover {
-    border-color: #c0c0c0;
-}
-
-.book-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.book-header span {
-    color: #00f6ff;
-}
-
-.remove-book-btn {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #551111;
-    border: 1px solid #773333;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    padding: 0;
-}
-
-.book-enchant-selector {
-    margin-bottom: 12px;
-}
-
-.book-enchant-select {
-    width: 100%;
-    padding: 8px 12px;
-    border-radius: 6px;
-    background: #0f0c12;
-    color: #fafafa;
-    border: 1px solid #444;
-}
-
-.no-books {
-    font-style: italic;
-    text-align: center;
-    padding: 20px;
-    grid-column: 1 / -1;
-}
-
 .botright {
     flex: 1;
 }
-
 .appfooter {
     margin: 48px 0;
 }
-
 .footertext {
     color: #fafafa;
 }
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .sac-enchants-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
-
     .books-grid {
         grid-template-columns: 1fr;
     }
 }
-
 @media (max-width: 700px) {
     .appheader {
         margin: 36px 0;
         font-size: 24px;
     }
-
     .intro-desc {
         font-size: 14px;
         width: 85%;
     }
 }
-
 @media (max-width: 425px) {
     .guidebtn {
         font-size: 14px;
