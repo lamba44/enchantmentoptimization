@@ -1,0 +1,208 @@
+export const itemEnchantMap = {
+    // Armor
+    Helmet: [
+        { name: "Protection", max: 4 },
+        { name: "Fire Protection", max: 4 },
+        { name: "Projectile Protection", max: 4 },
+        { name: "Blast Protection", max: 4 },
+        { name: "Respiration", max: 3 },
+        { name: "Aqua Affinity", max: 1 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Binding", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Chestplate: [
+        { name: "Protection", max: 4 },
+        { name: "Fire Protection", max: 4 },
+        { name: "Projectile Protection", max: 4 },
+        { name: "Blast Protection", max: 4 },
+        { name: "Thorns", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Binding", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Leggings: [
+        { name: "Protection", max: 4 },
+        { name: "Fire Protection", max: 4 },
+        { name: "Projectile Protection", max: 4 },
+        { name: "Blast Protection", max: 4 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Binding", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Boots: [
+        { name: "Protection", max: 4 },
+        { name: "Fire Protection", max: 4 },
+        { name: "Projectile Protection", max: 4 },
+        { name: "Blast Protection", max: 4 },
+        { name: "Feather Falling", max: 4 },
+        { name: "Frost Walker", max: 2 },
+        { name: "Soul Speed", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Binding", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    // Weapons
+    Sword: [
+        { name: "Sharpness", max: 5 },
+        { name: "Smite", max: 5 },
+        { name: "Bane of Arthropods", max: 5 },
+        { name: "Knockback", max: 2 },
+        { name: "Fire Aspect", max: 2 },
+        { name: "Looting", max: 3 },
+        { name: "Sweeping Edge", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Axe: [
+        { name: "Sharpness", max: 5 },
+        { name: "Smite", max: 5 },
+        { name: "Bane of Arthropods", max: 5 },
+        { name: "Knockback", max: 2 },
+        { name: "Fire Aspect", max: 2 },
+        { name: "Looting", max: 3 },
+        { name: "Efficiency", max: 5 },
+        { name: "Silk Touch", max: 1 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Bow: [
+        { name: "Power", max: 5 },
+        { name: "Punch", max: 2 },
+        { name: "Flame", max: 1 },
+        { name: "Infinity", max: 1 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Crossbow: [
+        { name: "Multishot", max: 1 },
+        { name: "Piercing", max: 4 },
+        { name: "Quick Charge", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Trident: [
+        { name: "Impaling", max: 5 },
+        { name: "Channeling", max: 1 },
+        { name: "Riptide", max: 3 },
+        { name: "Loyalty", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Mace: [
+        { name: "Density", max: 5 },
+        { name: "Breach", max: 4 },
+        { name: "Wind Burst", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    // Tools
+    Pickaxe: [
+        { name: "Efficiency", max: 5 },
+        { name: "Fortune", max: 3 },
+        { name: "Silk Touch", max: 1 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Shovel: [
+        { name: "Efficiency", max: 5 },
+        { name: "Fortune", max: 3 },
+        { name: "Silk Touch", max: 1 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Hoe: [
+        { name: "Efficiency", max: 5 },
+        { name: "Fortune", max: 3 },
+        { name: "Silk Touch", max: 1 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    "Fishing Rod": [
+        { name: "Lure", max: 3 },
+        { name: "Luck of the Sea", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    // Others
+    Shield: [
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Elytra: [
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Shears: [
+        { name: "Efficiency", max: 5 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    "Flint and Steel": [
+        { name: "Efficiency", max: 5 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+};
+
+// Conflict map for enchantments
+export const conflictMap = {
+    Protection: [
+        "Fire Protection",
+        "Projectile Protection",
+        "Blast Protection",
+    ],
+    "Fire Protection": [
+        "Protection",
+        "Projectile Protection",
+        "Blast Protection",
+    ],
+    "Projectile Protection": [
+        "Protection",
+        "Fire Protection",
+        "Blast Protection",
+    ],
+    "Blast Protection": [
+        "Protection",
+        "Fire Protection",
+        "Projectile Protection",
+    ],
+    Sharpness: ["Smite", "Bane of Arthropods"],
+    Smite: ["Sharpness", "Bane of Arthropods"],
+    "Bane of Arthropods": ["Sharpness", "Smite"],
+    Fortune: ["Silk Touch"],
+    "Silk Touch": ["Fortune"],
+    Infinity: ["Mending"],
+    Mending: ["Infinity"],
+    Riptide: ["Loyalty", "Channeling"],
+    Loyalty: ["Riptide"],
+    Channeling: ["Riptide"],
+    Multishot: ["Piercing"],
+    Piercing: ["Multishot"],
+};
+
+export const getEnchantmentsForItem = (itemName) => {
+    return itemEnchantMap[itemName] || [];
+};
+
+export const enchantmentsConflict = (ench1, ench2) => {
+    return conflictMap[ench1]?.includes(ench2) || false;
+};
