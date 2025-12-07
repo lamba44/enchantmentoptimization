@@ -1,4 +1,3 @@
-/* App.css */
 .appheader {
     margin: 48px 0;
     text-align: center;
@@ -268,7 +267,7 @@
     font-size: 12px;
     font-weight: 700;
 }
-/* Level selector with buttons instead of dropdown */
+
 .level-selector {
     display: flex;
     flex-wrap: wrap;
@@ -296,7 +295,7 @@
     border-color: #449944;
     transform: scale(1.1);
 }
-/* Books editor */
+
 .sac-books-editor {
     margin-top: 16px;
 }
@@ -309,12 +308,59 @@
 .books-title {
     font-style: italic;
 }
-/* Grid layout for books */
+
 .books-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
 }
+
+.error-message {
+    margin: 16px 0;
+    padding: 12px;
+    background-color: rgba(170, 55, 55, 0.2);
+    border: 1px solid #aa3737;
+    color: #ff8888;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.calculate-section {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.calculate-btn {
+    padding: 12px 32px;
+    background: #55aa55;
+    border: 2px solid #3d8f3d;
+    text-shadow: 1px 1px 0px #000;
+    font-weight: bold;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.calculate-btn:hover {
+    transform: translateY(-2px);
+    background: #66cc66;
+}
+
+.calculate-btn:active {
+    transform: translateY(0);
+}
+
+.calculate-btn:disabled {
+    background: #555555;
+    border-color: #333333;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .botright {
     flex: 1;
 }
@@ -324,7 +370,7 @@
 .footertext {
     color: #fafafa;
 }
-/* Responsive adjustments */
+
 @media (max-width: 768px) {
     .sac-enchants-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

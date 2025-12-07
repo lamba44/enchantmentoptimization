@@ -15,6 +15,8 @@ const App = () => {
     const [existingEnchantsChecked, setExistingEnchantsChecked] =
         React.useState(false);
     const [targetItemEnchants, setTargetItemEnchants] = React.useState({});
+    // Error message state
+    const [errorMessage, setErrorMessage] = React.useState("");
 
     // Get current enchantments based on selected item
     const currentEnchants = selectedSub
@@ -43,6 +45,7 @@ const App = () => {
             setSacMode(null);
             setExistingEnchantsChecked(false);
             setTargetItemEnchants({});
+            setErrorMessage("");
         }
     }, [selectedSub]);
 
@@ -82,6 +85,96 @@ const App = () => {
             }
             return copy;
         });
+    };
+
+    // Validation and calculation function
+    const validateAndCalculate = () => {
+        setErrorMessage("");
+
+        // Check if target item is selected
+        if (!selectedSub) {
+            setErrorMessage("Error: No target item selected.");
+            return;
+        }
+
+        // Check existing enchantments if checkbox is checked
+        if (
+            existingEnchantsChecked &&
+            Object.keys(targetItemEnchants).length === 0
+        ) {
+            setErrorMessage(
+                "Error: No existing enchantments selected for target item."
+            );
+            return;
+        }
+
+        // Check sacrifice mode is selected
+        if (!sacMode) {
+            setErrorMessage("Error: No sacrifice mode selected.");
+            return;
+        }
+
+        // Validate based on sacrifice mode
+        if (sacMode === "Books") {
+            if (Object.keys(sacBooksEnchants).length === 0) {
+                setErrorMessage("Error: No books selected for sacrifice.");
+                return;
+            }
+        } else if (sacMode === "Item & Books") {
+            const hasSacrificeEnchants =
+                Object.keys(sacItemEnchants).length > 0;
+            const hasBooks = Object.keys(sacBooksEnchants).length > 0;
+
+            if (!hasSacrificeEnchants && !hasBooks) {
+                setErrorMessage(
+                    "Error: No sacrifice enchantments or books selected."
+                );
+                return;
+            }
+
+            if (!hasSacrificeEnchants) {
+                setErrorMessage("Error: No sacrifice enchantments selected.");
+                return;
+            }
+
+            if (!hasBooks) {
+                setErrorMessage("Error: No books selected.");
+                return;
+            }
+        }
+
+        // If all validations pass, collect and log data
+        const calculationData = {
+            targetItem: selectedSub,
+            existingEnchantments: existingEnchantsChecked
+                ? targetItemEnchants
+                : {},
+            sacrificeMode: sacMode,
+            sacrificeItem: sacMode === "Item & Books" ? sacItem : null,
+            sacrificeEnchantments:
+                sacMode === "Item & Books" ? sacItemEnchants : {},
+            booksEnchantments:
+                sacMode === "Books"
+                    ? sacBooksEnchants
+                    : sacMode === "Item & Books"
+                    ? sacBooksEnchants
+                    : {},
+        };
+
+        console.log("Calculation Data:", calculationData);
+        console.log("Raw Data:", {
+            selectedCat,
+            selectedSub,
+            sacMode,
+            sacItem,
+            sacItemEnchants,
+            sacBooksEnchants,
+            existingEnchantsChecked,
+            targetItemEnchants,
+        });
+
+        // In the future, here we would call the calculation function
+        alert("Data validated and collected. Check console for details.");
     };
 
     return (
@@ -201,7 +294,6 @@ const App = () => {
                                                 </button>
                                             ))}
                                     </div>
-
                                     {/* Existing enchantments checkbox for target item */}
                                     {selectedSub && (
                                         <div className="existing-enchants-section">
@@ -220,6 +312,7 @@ const App = () => {
                                                                 {}
                                                             );
                                                         }
+                                                        setErrorMessage("");
                                                     }}
                                                 />
                                                 <span>
@@ -227,7 +320,6 @@ const App = () => {
                                                     Target Item
                                                 </span>
                                             </label>
-
                                             {existingEnchantsChecked && (
                                                 <div className="existing-enchants-grid">
                                                     <div className="existing-enchants-title">
@@ -251,7 +343,6 @@ const App = () => {
                                                                     );
                                                                 const isActive =
                                                                     !!selectedLevel;
-
                                                                 return (
                                                                     <div
                                                                         key={
@@ -346,7 +437,6 @@ const App = () => {
                                             )}
                                         </div>
                                     )}
-
                                     {/* Slots ALWAYS visible */}
                                     <div className="slots-area">
                                         <div className="slot target-slot">
@@ -378,7 +468,6 @@ const App = () => {
                                             )}
                                         </div>
                                     </div>
-
                                     {/* --- Sacrifice UI only appears when target is selected --- */}
                                     {selectedSub && (
                                         <>
@@ -392,16 +481,18 @@ const App = () => {
                                                                     ? "active"
                                                                     : ""
                                                             }`}
-                                                            onClick={() =>
-                                                                setSacMode(m)
-                                                            }
+                                                            onClick={() => {
+                                                                setSacMode(m);
+                                                                setErrorMessage(
+                                                                    ""
+                                                                );
+                                                            }}
                                                         >
                                                             {m}
                                                         </button>
                                                     )
                                                 )}
                                             </div>
-
                                             {/* Prompt to select mode if none is selected */}
                                             {!sacMode && (
                                                 <div className="mode-prompt">
@@ -409,7 +500,6 @@ const App = () => {
                                                     mode above
                                                 </div>
                                             )}
-
                                             {/* Books editor (shown when mode is Books) */}
                                             {sacMode === "Books" && (
                                                 <div className="sac-books-editor">
@@ -434,7 +524,6 @@ const App = () => {
                                                                     );
                                                                 const isActive =
                                                                     !!selectedLevel;
-
                                                                 return (
                                                                     <div
                                                                         key={
@@ -527,7 +616,6 @@ const App = () => {
                                                     </div>
                                                 </div>
                                             )}
-
                                             {/* Item & Books editor */}
                                             {sacMode === "Item & Books" && (
                                                 <>
@@ -561,7 +649,6 @@ const App = () => {
                                                                         );
                                                                     const isActive =
                                                                         !!selectedLevel;
-
                                                                     return (
                                                                         <div
                                                                             key={
@@ -653,7 +740,6 @@ const App = () => {
                                                             )}
                                                         </div>
                                                     </div>
-
                                                     {/* Books Section */}
                                                     <div className="sac-books-editor">
                                                         <div className="books-header">
@@ -677,7 +763,6 @@ const App = () => {
                                                                         );
                                                                     const isActive =
                                                                         !!selectedLevel;
-
                                                                     return (
                                                                         <div
                                                                             key={
@@ -773,6 +858,23 @@ const App = () => {
                                             )}
                                         </>
                                     )}
+                                    {/* Error message display */}
+                                    {errorMessage && (
+                                        <div className="error-message">
+                                            {errorMessage}
+                                        </div>
+                                    )}
+
+                                    {/* Calculate button */}
+                                    <div className="calculate-section">
+                                        <button
+                                            className="calculate-btn"
+                                            onClick={validateAndCalculate}
+                                            disabled={!selectedSub}
+                                        >
+                                            Calculate
+                                        </button>
+                                    </div>
                                 </>
                             );
                         })()}
