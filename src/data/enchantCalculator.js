@@ -1,5 +1,9 @@
 import { enchantmentsConflict, itemEnchantMap } from "./enchantmentData";
 
+function deepClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
 function clone(n) {
     return {
         item: n.item,
@@ -129,10 +133,12 @@ function getMultiplier(enchantName, isBook) {
 function combine(aInput, bInput) {
     let a = aInput;
     let b = bInput;
+    let swapped = false;
     if (a.isBook && !b.isBook) {
         const tmp = a;
         a = b;
         b = tmp;
+        swapped = true;
     }
     const r = clone(a);
     r.item = a.item;
@@ -183,23 +189,24 @@ function combine(aInput, bInput) {
         changes,
         left: a,
         right: b,
+        swapped,
     };
 }
 
 export function computeOptimalEnchantPlan(data) {
     const target = {
-        item: data.targetItem,
+        item: deepClone(data.targetItem),
         isBook: false,
         rc: 0,
-        ench: { ...data.existingEnchantments },
+        ench: deepClone(data.existingEnchantments || {}),
     };
     const itemsToCombine = [target];
     if (data.sacrificeMode === "Item & Books" && data.sacrificeItem) {
         itemsToCombine.push({
-            item: data.sacrificeItem,
+            item: deepClone(data.sacrificeItem),
             isBook: false,
             rc: 0,
-            ench: { ...data.sacrificeEnchantments },
+            ench: deepClone(data.sacrificeEnchantments || {}),
         });
     }
     if (
@@ -213,7 +220,7 @@ export function computeOptimalEnchantPlan(data) {
                 item: "Book",
                 isBook: true,
                 rc: 0,
-                ench: { [enchantName]: level },
+                ench: { [enchantName]: Number(level) },
             });
         }
     }
@@ -244,7 +251,7 @@ export function computeOptimalEnchantPlan(data) {
             if (!best || state.totalLevels < best.totalLevels) {
                 best = {
                     ...state,
-                    finalItem: state.nodes[0],
+                    finalItem: deepClone(state.nodes[0]),
                     timeMs: performance.now() - start,
                 };
             }
@@ -267,15 +274,18 @@ export function computeOptimalEnchantPlan(data) {
                 if (seen.has(stateKey) && seen.get(stateKey) <= newTotal)
                     continue;
                 seen.set(stateKey, newTotal);
+                const leftDisp = disp(result.left);
+                const rightDisp = disp(result.right);
+                const resultDisp = disp(result.node);
                 stack.push({
                     nodes: newNodes,
                     totalLevels: newTotal,
                     steps: [
                         ...state.steps,
                         {
-                            left: disp(state.nodes[i]),
-                            right: disp(state.nodes[j]),
-                            result: disp(result.node),
+                            left: leftDisp,
+                            right: rightDisp,
+                            result: resultDisp,
                             levels: result.levels,
                             xp: result.xp,
                             pw: result.pw,
