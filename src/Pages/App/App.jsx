@@ -40,8 +40,18 @@ const App = () => {
     React.useEffect(() => {
         if (selectedSub) {
             setSacItem(selectedSub);
+
+            // NEW: when switching to a new selectedSub, clear all per-item enchant selections
+            // This prevents enchantments from the previous item (e.g., mace) persisting
+            // when the user selects a different target item (e.g., bow).
+            setSacItemEnchants({});
+            setSacBooksEnchants({});
+            setTargetItemEnchants({});
+            setExistingEnchantsChecked(false);
+            setErrorMessage("");
+            setCalculationResult(null);
         } else {
-            // Reset sacrifice data when target is cleared
+            // Reset everything when target is cleared
             setSacItem(null);
             setSacItemEnchants({});
             setSacBooksEnchants({});
