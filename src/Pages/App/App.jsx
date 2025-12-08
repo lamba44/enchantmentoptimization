@@ -2,6 +2,7 @@
 import React from "react";
 import "./App.css";
 import { itemEnchantMap, conflictMap } from "./../../data/enchantmentData";
+import { computeOptimalEnchantPlan } from "./../../data/enchantCalculator";
 
 const App = () => {
     const [selectedCat, setSelectedCat] = React.useState(null);
@@ -17,6 +18,8 @@ const App = () => {
     const [targetItemEnchants, setTargetItemEnchants] = React.useState({});
     // Error message state
     const [errorMessage, setErrorMessage] = React.useState("");
+    // Result state
+    const [calculationResult, setCalculationResult] = React.useState(null);
 
     // Get current enchantments based on selected item
     const currentEnchants = selectedSub
@@ -46,6 +49,7 @@ const App = () => {
             setExistingEnchantsChecked(false);
             setTargetItemEnchants({});
             setErrorMessage("");
+            setCalculationResult(null);
         }
     }, [selectedSub]);
 
@@ -90,6 +94,7 @@ const App = () => {
     // Validation and calculation function
     const validateAndCalculate = () => {
         setErrorMessage("");
+        setCalculationResult(null);
 
         // Check if target item is selected
         if (!selectedSub) {
@@ -124,26 +129,23 @@ const App = () => {
             const hasSacrificeEnchants =
                 Object.keys(sacItemEnchants).length > 0;
             const hasBooks = Object.keys(sacBooksEnchants).length > 0;
-
             if (!hasSacrificeEnchants && !hasBooks) {
                 setErrorMessage(
                     "Error: No sacrifice enchantments or books selected."
                 );
                 return;
             }
-
             if (!hasSacrificeEnchants) {
                 setErrorMessage("Error: No sacrifice enchantments selected.");
                 return;
             }
-
             if (!hasBooks) {
                 setErrorMessage("Error: No books selected.");
                 return;
             }
         }
 
-        // If all validations pass, collect and log data
+        // If all validations pass, collect and calculate
         const calculationData = {
             targetItem: selectedSub,
             existingEnchantments: existingEnchantsChecked
@@ -161,20 +163,92 @@ const App = () => {
                     : {},
         };
 
-        console.log("Calculation Data:", calculationData);
-        console.log("Raw Data:", {
-            selectedCat,
-            selectedSub,
-            sacMode,
-            sacItem,
-            sacItemEnchants,
-            sacBooksEnchants,
-            existingEnchantsChecked,
-            targetItemEnchants,
-        });
+        try {
+            const result = computeOptimalEnchantPlan(calculationData);
+            setCalculationResult(result);
+        } catch (error) {
+            setErrorMessage(`Calculation error: ${error.message}`);
+            console.error("Calculation failed:", error);
+        }
+    };
 
-        // In the future, here we would call the calculation function
-        alert("Data validated and collected. Check console for details.");
+    // Format the calculation result for display
+    const formatResult = (result) => {
+        if (!result) return "";
+
+        if (!result.success) {
+            return `Error: ${
+                result.reason
+            }\nCalculation time: ${result.timeMs.toFixed(2)} ms`;
+        }
+
+        let output = `Optimal solution found in ${result.timeMs.toFixed(
+            2
+        )} ms\n`;
+        output += `Total cost: ${result.totalLevels} levels (${result.totalXP} XP)\n\n`;
+        output += "Steps:\n";
+
+        if (result.steps.length === 0) {
+            output += "No enchanting steps needed.\n";
+        } else {
+            result.steps.forEach((step, index) => {
+                output += `${index + 1}. Combine ${step.left} with ${
+                    step.right
+                }\n`;
+                output += `   Result: ${step.result}\n`;
+                output += `   Cost: ${step.levels} levels (${step.xp} XP)`;
+
+                if (step.pw > 0) {
+                    output += `, Prior Work Penalty: ${step.pw} level${
+                        step.pw === 1 ? "" : "s"
+                    }`;
+                }
+
+                output += "\n";
+            });
+        }
+
+        output += `\nFinal item: ${disp(result.finalItem)}`;
+
+        return output;
+    };
+
+    // Helper function to display item with enchantments
+    const disp = (item) => {
+        const e = Object.entries(item.ench)
+            .map(([k, v]) => k + " " + toRoman(v))
+            .join(", ");
+        return item.isBook
+            ? "Book" + (e ? " (" + e + ")" : "")
+            : item.item + (e ? " (" + e + ")" : "");
+    };
+
+    // Helper function to convert numbers to Roman numerals
+    const toRoman = (num) => {
+        if (num <= 0) return "0";
+        const lookup = {
+            M: 1000,
+            CM: 900,
+            D: 500,
+            CD: 400,
+            C: 100,
+            XC: 90,
+            L: 50,
+            XL: 40,
+            X: 10,
+            IX: 9,
+            V: 5,
+            IV: 4,
+            I: 1,
+        };
+        let roman = "";
+        for (let i in lookup) {
+            while (num >= lookup[i]) {
+                roman += i;
+                num -= lookup[i];
+            }
+        }
+        return roman;
     };
 
     return (
@@ -313,6 +387,9 @@ const App = () => {
                                                             );
                                                         }
                                                         setErrorMessage("");
+                                                        setCalculationResult(
+                                                            null
+                                                        );
                                                     }}
                                                 />
                                                 <span>
@@ -485,6 +562,9 @@ const App = () => {
                                                                 setSacMode(m);
                                                                 setErrorMessage(
                                                                     ""
+                                                                );
+                                                                setCalculationResult(
+                                                                    null
                                                                 );
                                                             }}
                                                         >
@@ -864,7 +944,6 @@ const App = () => {
                                             {errorMessage}
                                         </div>
                                     )}
-
                                     {/* Calculate button */}
                                     <div className="calculate-section">
                                         <button
@@ -880,8 +959,19 @@ const App = () => {
                         })()}
                     </div>
                     <div className="botright">
-                        {" "}
-                        all the results show up here
+                        {calculationResult ? (
+                            <pre className="calculation-result">
+                                {formatResult(calculationResult)}
+                            </pre>
+                        ) : (
+                            <div className="result-placeholder">
+                                <p>Calculation results will appear here</p>
+                                <p>
+                                    Select your items and enchantments, then
+                                    click "Calculate"
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

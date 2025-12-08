@@ -364,6 +364,27 @@
 .botright {
     flex: 1;
 }
+
+.calculation-result {
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: #55aa55;
+    background-color: rgba(20, 15, 35, 0.8);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    max-height: 80vh;
+    overflow-y: auto;
+    line-height: 1.4;
+}
+
+.result-placeholder {
+    color: #aaa;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
 .appfooter {
     margin: 48px 0;
 }
