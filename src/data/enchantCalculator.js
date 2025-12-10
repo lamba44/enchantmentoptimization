@@ -300,7 +300,7 @@ export function computeOptimalEnchantPlan(data) {
     if (!best) {
         return {
             success: false,
-            reason: "No valid merge order found without exceeding 39 levels (Too Expensive).",
+            reason: "No valid merge order found.",
             timeMs: performance.now() - start,
         };
     }

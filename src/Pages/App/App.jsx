@@ -261,6 +261,33 @@ const App = () => {
         return roman;
     };
 
+    // Helper functions for formatting items
+    const extractItemName = (itemString) => {
+        if (!itemString) return "";
+        const match = itemString.match(/^([^(]+)/);
+        return match ? match[1].trim() : itemString;
+    };
+
+    const extractEnchantments = (itemString) => {
+        if (!itemString) return [];
+        const match = itemString.match(/\(([^)]+)\)/);
+        if (!match) return [];
+
+        return match[1]
+            .split(",")
+            .map((enchant) => enchant.trim())
+            .filter((enchant) => enchant);
+    };
+
+    const formatFinalItem = (item) => {
+        const e = Object.entries(item.ench)
+            .map(([k, v]) => k + " " + toRoman(v))
+            .join(", ");
+        return item.isBook
+            ? "Book" + (e ? " (" + e + ")" : "")
+            : item.item + (e ? " (" + e + ")" : "");
+    };
+
     return (
         <div className="container">
             <h1 className="appheader">MINECRAFT ENCHANTING TOOL</h1>
@@ -970,9 +997,205 @@ const App = () => {
                     </div>
                     <div className="botright">
                         {calculationResult ? (
-                            <pre className="calculation-result">
-                                {formatResult(calculationResult)}
-                            </pre>
+                            <div className="calculation-result">
+                                {!calculationResult.success ? (
+                                    <div className="error-result">
+                                        Error: {calculationResult.reason}
+                                        <div className="calc-time">
+                                            Calculation time:{" "}
+                                            {calculationResult.timeMs.toFixed(
+                                                2
+                                            )}{" "}
+                                            ms
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="result-summary">
+                                            <div className="summary-cost">
+                                                Total Cost:{" "}
+                                                {calculationResult.totalLevels}{" "}
+                                                Levels (
+                                                {calculationResult.totalXP} XP)
+                                            </div>
+                                            <div className="summary-header">
+                                                Solution Found in{" "}
+                                                {calculationResult.timeMs.toFixed(
+                                                    2
+                                                )}{" "}
+                                                ms
+                                            </div>
+                                        </div>
+
+                                        <div className="steps-title">
+                                            Follow these steps:
+                                        </div>
+
+                                        {calculationResult.steps.length ===
+                                        0 ? (
+                                            <div className="no-steps">
+                                                No enchanting steps needed.
+                                            </div>
+                                        ) : (
+                                            calculationResult.steps.map(
+                                                (step, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="step-container"
+                                                    >
+                                                        <div className="step-number">
+                                                            Step {index + 1}:
+                                                        </div>
+                                                        <div className="combination-view">
+                                                            <div className="item-box">
+                                                                <div className="item-name">
+                                                                    {extractItemName(
+                                                                        step.left
+                                                                    )}
+                                                                </div>
+                                                                <div className="item-enchantments">
+                                                                    {extractEnchantments(
+                                                                        step.left
+                                                                    ).map(
+                                                                        (
+                                                                            ench,
+                                                                            i
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    i
+                                                                                }
+                                                                                className="enchantment"
+                                                                            >
+                                                                                {
+                                                                                    ench
+                                                                                }
+                                                                            </div>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div className="plus-sign">
+                                                                +
+                                                            </div>
+                                                            <div className="item-box">
+                                                                <div className="item-name">
+                                                                    {extractItemName(
+                                                                        step.right
+                                                                    )}
+                                                                </div>
+                                                                <div className="item-enchantments">
+                                                                    {extractEnchantments(
+                                                                        step.right
+                                                                    ).map(
+                                                                        (
+                                                                            ench,
+                                                                            i
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    i
+                                                                                }
+                                                                                className="enchantment"
+                                                                            >
+                                                                                {
+                                                                                    ench
+                                                                                }
+                                                                            </div>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="result-view">
+                                                            <div className="result-label">
+                                                                Result:
+                                                            </div>
+                                                            <div className="item-box result-item">
+                                                                <div className="item-name">
+                                                                    {extractItemName(
+                                                                        step.result
+                                                                    )}
+                                                                </div>
+                                                                <div className="item-enchantments">
+                                                                    {extractEnchantments(
+                                                                        step.result
+                                                                    ).map(
+                                                                        (
+                                                                            ench,
+                                                                            i
+                                                                        ) => (
+                                                                            <div
+                                                                                key={
+                                                                                    i
+                                                                                }
+                                                                                className="enchantment"
+                                                                            >
+                                                                                {
+                                                                                    ench
+                                                                                }
+                                                                            </div>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="cost-info">
+                                                            Cost: {step.levels}{" "}
+                                                            levels ({step.xp}{" "}
+                                                            XP)
+                                                            {step.pw > 0 && (
+                                                                <span className="pw-penalty">
+                                                                    {" "}
+                                                                    • Prior Work
+                                                                    Penalty:{" "}
+                                                                    {
+                                                                        step.pw
+                                                                    }{" "}
+                                                                    level
+                                                                    {step.pw ===
+                                                                    1
+                                                                        ? ""
+                                                                        : "s"}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            )
+                                        )}
+
+                                        <div className="final-item-section">
+                                            <div className="final-item-label">
+                                                Final item:
+                                            </div>
+                                            <div className="item-box final-item">
+                                                <div className="item-name">
+                                                    {extractItemName(
+                                                        formatFinalItem(
+                                                            calculationResult.finalItem
+                                                        )
+                                                    )}
+                                                </div>
+                                                <div className="item-enchantments">
+                                                    {extractEnchantments(
+                                                        formatFinalItem(
+                                                            calculationResult.finalItem
+                                                        )
+                                                    ).map((ench, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className="enchantment"
+                                                        >
+                                                            {ench}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         ) : (
                             <div className="result-placeholder">
                                 <p>Calculation results will appear here</p>

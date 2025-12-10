@@ -365,24 +365,148 @@
     flex: 1;
 }
 
-.calculation-result {
-    white-space: pre-wrap;
-    font-family: monospace;
-    color: #55aa55;
-    background-color: rgba(20, 15, 35, 0.8);
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #444;
-    max-height: 80vh;
-    overflow-y: auto;
-    line-height: 1.4;
-}
-
 .result-placeholder {
     color: #aaa;
     text-align: center;
     padding: 20px;
     font-style: italic;
+}
+
+.calculation-result {
+    color: #55aa55;
+}
+
+.result-summary {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+}
+
+.summary-cost {
+    color: #aaffaa;
+    font-size: 28px;
+}
+
+.summary-header {
+    color: #aaa;
+    font-style: italic;
+}
+
+.steps-title {
+    font-style: italic;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.step-container {
+    margin-bottom: 12px;
+    padding: 12px;
+}
+
+.step-number {
+    color: #ffcc66;
+    font-weight: 700;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.combination-view {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.item-box {
+    flex: 1;
+    border-radius: 6px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.result-item {
+    border: 1px solid #ffaa55;
+}
+
+.final-item {
+    border: 4px solid #aa00aa;
+}
+
+.item-name {
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #55ffff;
+}
+
+.item-enchantments {
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+}
+
+.enchantment {
+    font-size: 16px;
+    color: #fafafa;
+}
+
+.plus-sign {
+    font-size: 24px;
+    color: #fafafa;
+    font-weight: bold;
+}
+
+.result-view {
+    margin: 16px 0;
+}
+
+.result-label {
+    color: #ffaa55;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.cost-info {
+    color: #aaffaa;
+    font-style: italic;
+    font-size: 16px;
+}
+
+.pw-penalty {
+    color: #ff8888;
+}
+
+.final-item-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 2px solid #fafafa;
+}
+
+.final-item-label {
+    color: #ffaa55;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.no-steps {
+    color: #aaffaa;
+    text-align: center;
+    padding: 15px;
+    font-style: italic;
+}
+
+.error-result {
+    color: #ff8888;
+    padding: 15px;
+    background: #2d1414b3;
+    border-radius: 6px;
+    border: 1px solid #883333;
+}
+
+.calc-time {
+    color: #ccc;
+    background-color: transparent;
+    font-size: 14px;
+    margin-top: 6px;
 }
 
 .appfooter {
