@@ -120,6 +120,7 @@ const multipliers = {
     Density: { item: 2, book: 1 },
     Breach: { item: 4, book: 2 },
     "Wind Burst": { item: 4, book: 2 },
+    Lunge: { item: 2, book: 1 },
 };
 
 function getMultiplier(enchantName, isBook) {

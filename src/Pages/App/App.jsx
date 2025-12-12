@@ -334,6 +334,7 @@ const App = () => {
                                     "Crossbow",
                                     "Trident",
                                     "Mace",
+                                    "Spear",
                                 ],
                                 Tools: [
                                     "Pickaxe",

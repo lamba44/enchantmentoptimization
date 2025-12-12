@@ -516,6 +516,21 @@
     color: #fafafa;
 }
 
+@media (max-width: 900px) {
+    .bottomsect {
+        flex-direction: column;
+    }
+
+    .summary-cost {
+        margin-top: 20px;
+    }
+
+    .step-container {
+        padding: 0;
+        margin-bottom: 30px;
+    }
+}
+
 @media (max-width: 768px) {
     .sac-enchants-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

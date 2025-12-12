@@ -112,6 +112,18 @@ export const itemEnchantMap = {
         { name: "Mending", max: 1 },
         { name: "Curse of Vanishing", max: 1 },
     ],
+    Spear: [
+        { name: "Sharpness", max: 5 },
+        { name: "Smite", max: 5 },
+        { name: "Bane of Arthropods", max: 5 },
+        { name: "Knockback", max: 2 },
+        { name: "Fire Aspect", max: 2 },
+        { name: "Looting", max: 3 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+        { name: "Lunge", max: 3 },
+    ],
     // Tools
     Pickaxe: [
         { name: "Efficiency", max: 5 },
