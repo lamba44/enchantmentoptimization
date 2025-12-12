@@ -29,10 +29,24 @@ const App = () => {
         ? itemEnchantMap[selectedSub] || []
         : [];
 
-    // Helper function to check if an enchantment has conflicts with selected ones
+    // Helper function to check if an enchantment has conflicts with selected ones (within same set)
     const hasConflict = (enchName, enchantments) => {
         for (const selectedEnch in enchantments) {
             if (conflictMap[selectedEnch]?.includes(enchName)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // New helper to check conflict with target selected enchants (target has priority)
+    const conflictsWithTarget = (enchName) => {
+        if (!existingEnchantsChecked) return false;
+        for (const te in targetItemEnchants) {
+            if (
+                conflictMap[te]?.includes(enchName) ||
+                conflictMap[enchName]?.includes(te)
+            ) {
                 return true;
             }
         }
@@ -66,8 +80,34 @@ const App = () => {
         }
     }, [selectedSub]);
 
+    // When the user toggles/changes target enchantments, remove any selected
+    // **books** that conflict with the target (but do NOT clear sacrifice item enchants).
+    React.useEffect(() => {
+        if (!existingEnchantsChecked) return;
+        // Only filter sacBooksEnchants (books should be blocked); keep sacItemEnchants intact.
+        setSacBooksEnchants((prev) => {
+            const copy = { ...prev };
+            for (const key of Object.keys(copy)) {
+                for (const te of Object.keys(targetItemEnchants)) {
+                    if (
+                        conflictMap[te]?.includes(key) ||
+                        conflictMap[key]?.includes(te)
+                    ) {
+                        delete copy[key];
+                        break;
+                    }
+                }
+            }
+            return copy;
+        });
+    }, [existingEnchantsChecked, targetItemEnchants]);
+
     // --- handlers for enchantments (generic) ---
-    const toggleEnchant = (ename, setEnchants, enchants) => {
+    // Add 'isBook' flag so we only block toggling when the enchant belongs to a book.
+    const toggleEnchant = (ename, setEnchants, enchants, isBook = false) => {
+        // Only prevent toggling if it's a BOOK enchant that conflicts with the target.
+        if (isBook && existingEnchantsChecked && conflictsWithTarget(ename))
+            return;
         setEnchants((prev) => {
             const copy = { ...prev };
             // If enabling, remove any conflicting enchantments
@@ -86,7 +126,10 @@ const App = () => {
         });
     };
 
-    const setEnchantLevel = (ename, lvl, setEnchants) => {
+    // setEnchantLevel now accepts isBook flag to prevent leveling books conflicting with target.
+    const setEnchantLevel = (ename, lvl, setEnchants, isBook = false) => {
+        if (isBook && existingEnchantsChecked && conflictsWithTarget(ename))
+            return;
         setEnchants((prev) => {
             const copy = { ...prev };
             if (lvl <= 0) {
@@ -521,7 +564,14 @@ const App = () => {
                                                                                 toggleEnchant(
                                                                                     ench.name,
                                                                                     setTargetItemEnchants,
-                                                                                    targetItemEnchants
+                                                                                    targetItemEnchants,
+                                                                                    false
+                                                                                );
+                                                                                setErrorMessage(
+                                                                                    ""
+                                                                                );
+                                                                                setCalculationResult(
+                                                                                    null
                                                                                 );
                                                                             }
                                                                         }}
@@ -573,7 +623,14 @@ const App = () => {
                                                                                                 setEnchantLevel(
                                                                                                     ench.name,
                                                                                                     lvl,
-                                                                                                    setTargetItemEnchants
+                                                                                                    setTargetItemEnchants,
+                                                                                                    false
+                                                                                                );
+                                                                                                setErrorMessage(
+                                                                                                    ""
+                                                                                                );
+                                                                                                setCalculationResult(
+                                                                                                    null
                                                                                                 );
                                                                                             }}
                                                                                         >
@@ -677,10 +734,13 @@ const App = () => {
                                                                             .name
                                                                     ] || 0;
                                                                 const isDisabled =
-                                                                    !selectedLevel &&
-                                                                    hasConflict(
-                                                                        ench.name,
-                                                                        sacBooksEnchants
+                                                                    (!selectedLevel &&
+                                                                        hasConflict(
+                                                                            ench.name,
+                                                                            sacBooksEnchants
+                                                                        )) ||
+                                                                    conflictsWithTarget(
+                                                                        ench.name
                                                                     );
                                                                 const isActive =
                                                                     !!selectedLevel;
@@ -705,7 +765,14 @@ const App = () => {
                                                                                 toggleEnchant(
                                                                                     ench.name,
                                                                                     setSacBooksEnchants,
-                                                                                    sacBooksEnchants
+                                                                                    sacBooksEnchants,
+                                                                                    true
+                                                                                );
+                                                                                setErrorMessage(
+                                                                                    ""
+                                                                                );
+                                                                                setCalculationResult(
+                                                                                    null
                                                                                 );
                                                                             }
                                                                         }}
@@ -757,7 +824,14 @@ const App = () => {
                                                                                                 setEnchantLevel(
                                                                                                     ench.name,
                                                                                                     lvl,
-                                                                                                    setSacBooksEnchants
+                                                                                                    setSacBooksEnchants,
+                                                                                                    true
+                                                                                                );
+                                                                                                setErrorMessage(
+                                                                                                    ""
+                                                                                                );
+                                                                                                setCalculationResult(
+                                                                                                    null
                                                                                                 );
                                                                                             }}
                                                                                         >
@@ -801,6 +875,9 @@ const App = () => {
                                                                             ench
                                                                                 .name
                                                                         ] || 0;
+                                                                    // IMPORTANT: Do NOT disable sac-item enchant options due to conflicts with the target.
+                                                                    // Sacrifice item enchantments may conflict with the target but should be selectable;
+                                                                    // they will be discarded by the anvil logic (left-item priority) when combined.
                                                                     const isDisabled =
                                                                         !selectedLevel &&
                                                                         hasConflict(
@@ -830,7 +907,14 @@ const App = () => {
                                                                                     toggleEnchant(
                                                                                         ench.name,
                                                                                         setSacItemEnchants,
-                                                                                        sacItemEnchants
+                                                                                        sacItemEnchants,
+                                                                                        false
+                                                                                    );
+                                                                                    setErrorMessage(
+                                                                                        ""
+                                                                                    );
+                                                                                    setCalculationResult(
+                                                                                        null
                                                                                     );
                                                                                 }
                                                                             }}
@@ -882,7 +966,14 @@ const App = () => {
                                                                                                     setEnchantLevel(
                                                                                                         ench.name,
                                                                                                         lvl,
-                                                                                                        setSacItemEnchants
+                                                                                                        setSacItemEnchants,
+                                                                                                        false
+                                                                                                    );
+                                                                                                    setErrorMessage(
+                                                                                                        ""
+                                                                                                    );
+                                                                                                    setCalculationResult(
+                                                                                                        null
                                                                                                     );
                                                                                                 }}
                                                                                             >
@@ -916,10 +1007,13 @@ const App = () => {
                                                                                 .name
                                                                         ] || 0;
                                                                     const isDisabled =
-                                                                        !selectedLevel &&
-                                                                        hasConflict(
-                                                                            ench.name,
-                                                                            sacBooksEnchants
+                                                                        (!selectedLevel &&
+                                                                            hasConflict(
+                                                                                ench.name,
+                                                                                sacBooksEnchants
+                                                                            )) ||
+                                                                        conflictsWithTarget(
+                                                                            ench.name
                                                                         );
                                                                     const isActive =
                                                                         !!selectedLevel;
@@ -944,7 +1038,14 @@ const App = () => {
                                                                                     toggleEnchant(
                                                                                         ench.name,
                                                                                         setSacBooksEnchants,
-                                                                                        sacBooksEnchants
+                                                                                        sacBooksEnchants,
+                                                                                        true
+                                                                                    );
+                                                                                    setErrorMessage(
+                                                                                        ""
+                                                                                    );
+                                                                                    setCalculationResult(
+                                                                                        null
                                                                                     );
                                                                                 }
                                                                             }}
@@ -996,7 +1097,14 @@ const App = () => {
                                                                                                     setEnchantLevel(
                                                                                                         ench.name,
                                                                                                         lvl,
-                                                                                                        setSacBooksEnchants
+                                                                                                        setSacBooksEnchants,
+                                                                                                        true
+                                                                                                    );
+                                                                                                    setErrorMessage(
+                                                                                                        ""
+                                                                                                    );
+                                                                                                    setCalculationResult(
+                                                                                                        null
                                                                                                     );
                                                                                                 }}
                                                                                             >

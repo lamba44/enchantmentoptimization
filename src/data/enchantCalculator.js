@@ -10,6 +10,8 @@ function clone(n) {
         isBook: n.isBook,
         rc: n.rc,
         ench: { ...n.ench },
+        // preserve whether this node originates (directly or indirectly) from the original target
+        isTarget: !!n.isTarget,
     };
 }
 
@@ -20,7 +22,17 @@ function key(nodes) {
                 .sort()
                 .map(([k, v]) => k + ":" + v)
                 .join(",");
-            return (n.isBook ? "B" : "I") + "|" + n.item + "|" + n.rc + "|" + e;
+            return (
+                (n.isBook ? "B" : "I") +
+                "|" +
+                n.item +
+                "|" +
+                n.rc +
+                "|" +
+                e +
+                "|" +
+                (n.isTarget ? "T" : "N")
+            );
         })
         .sort()
         .join("||");
@@ -135,6 +147,7 @@ function combine(aInput, bInput) {
     let a = aInput;
     let b = bInput;
     let swapped = false;
+    // if a is a book but b is not, the game treats the non-book as left; preserve earlier behavior
     if (a.isBook && !b.isBook) {
         const tmp = a;
         a = b;
@@ -144,6 +157,9 @@ function combine(aInput, bInput) {
     const r = clone(a);
     r.item = a.item;
     r.isBook = a.isBook && b.isBook;
+    // preserve isTarget property conservatively from inputs
+    r.isTarget = !!(a.isTarget || b.isTarget);
+
     const changes = [];
     let enchantCost = 0;
     for (const x in b.ench) {
@@ -154,6 +170,7 @@ function combine(aInput, bInput) {
                 conflictCount++;
         }
         if (conflictCount > 0) {
+            // conflicting enchantments on right side are discarded per anvil rules
             enchantCost += conflictCount * 1;
             applicable = false;
         }
@@ -194,37 +211,71 @@ function combine(aInput, bInput) {
     };
 }
 
+function removeConflictsWithTarget(enchantObj, targetEnch) {
+    if (!enchantObj || Object.keys(enchantObj).length === 0) return {};
+    if (!targetEnch || Object.keys(targetEnch).length === 0)
+        return { ...enchantObj };
+    const result = {};
+    const targetKeys = Object.keys(targetEnch);
+    for (const [k, v] of Object.entries(enchantObj)) {
+        let conflicts = false;
+        for (const t of targetKeys) {
+            if (enchantmentsConflict(k, t) || enchantmentsConflict(t, k)) {
+                conflicts = true;
+                break;
+            }
+        }
+        if (!conflicts) result[k] = v;
+    }
+    return result;
+}
+
 export function computeOptimalEnchantPlan(data) {
+    // initial target node: mark isTarget = true so merges keep left-priority
     const target = {
         item: deepClone(data.targetItem),
         isBook: false,
         rc: 0,
         ench: deepClone(data.existingEnchantments || {}),
+        isTarget: true,
     };
+
+    // target enchantments (left-side priority)
+    const targetBaseEnch = deepClone(data.existingEnchantments || {});
+
     const itemsToCombine = [target];
+
+    // Do NOT strip conflicting enchantments from the sacrifice item.
     if (data.sacrificeMode === "Item & Books" && data.sacrificeItem) {
         itemsToCombine.push({
             item: deepClone(data.sacrificeItem),
             isBook: false,
             rc: 0,
             ench: deepClone(data.sacrificeEnchantments || {}),
+            isTarget: false,
         });
     }
+
     if (
         data.booksEnchantments &&
         Object.keys(data.booksEnchantments).length > 0
     ) {
-        for (const [enchantName, level] of Object.entries(
-            data.booksEnchantments
-        )) {
+        // filter books that conflict with target's enchants (books should be blocked)
+        const filteredBooks = removeConflictsWithTarget(
+            deepClone(data.booksEnchantments),
+            targetBaseEnch
+        );
+        for (const [enchantName, level] of Object.entries(filteredBooks)) {
             itemsToCombine.push({
                 item: "Book",
                 isBook: true,
                 rc: 0,
                 ench: { [enchantName]: Number(level) },
+                isTarget: false,
             });
         }
     }
+
     if (itemsToCombine.length === 1) {
         return {
             success: true,
@@ -235,6 +286,7 @@ export function computeOptimalEnchantPlan(data) {
             finalItem: target,
         };
     }
+
     const stack = [
         {
             nodes: itemsToCombine.map(clone),
@@ -262,8 +314,26 @@ export function computeOptimalEnchantPlan(data) {
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
                 if (i === j) continue;
-                const result = combine(state.nodes[i], state.nodes[j]);
+
+                // Ensure combines keep the original target node on the LEFT when possible.
+                // If exactly one of the pair is the target, make that the left operand.
+                let aIdx = i;
+                let bIdx = j;
+                const aIsTarget = !!state.nodes[i].isTarget;
+                const bIsTarget = !!state.nodes[j].isTarget;
+                if (!aIsTarget && bIsTarget) {
+                    // swap indices so target is left
+                    aIdx = j;
+                    bIdx = i;
+                }
+                const result = combine(state.nodes[aIdx], state.nodes[bIdx]);
                 if (!result) continue;
+
+                // Ensure the resulting node inherits isTarget if either input had it.
+                result.node.isTarget = !!(
+                    state.nodes[aIdx].isTarget || state.nodes[bIdx].isTarget
+                );
+
                 const newNodes = [];
                 for (let k = 0; k < n; k++) {
                     if (k !== i && k !== j)
