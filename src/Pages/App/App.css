@@ -84,12 +84,15 @@
     gap: 24px;
 }
 .botleft {
-    flex: 2;
+    flex: 3;
 }
 .cat-select {
     display: flex;
     gap: 12px;
     margin-bottom: 16px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 .cat-btn {
     padding: 6px 16px;
@@ -98,6 +101,7 @@
     color: #fafafa;
     cursor: pointer;
     border-radius: 6px;
+    flex: 0 0 auto;
 }
 .cat-btn.active {
     background-color: #55aa55;
@@ -106,6 +110,9 @@
     display: flex;
     gap: 12px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 .subcat-btn {
     padding: 6px 16px;
@@ -114,6 +121,7 @@
     color: #fafafa;
     cursor: pointer;
     border-radius: 6px;
+    flex: 0 0 auto;
 }
 .subcat-btn.active {
     background-color: #1d5c99;
@@ -122,6 +130,7 @@
     display: flex;
     align-items: center;
     gap: 24px;
+    justify-content: center;
 }
 .slot {
     width: 120px;
@@ -149,6 +158,9 @@
     gap: 12px;
     align-items: center;
     transition: opacity 0.12s ease, transform 0.12s ease;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
 }
 .subcat-container.hidden {
     opacity: 0;
@@ -362,7 +374,7 @@
 }
 
 .botright {
-    flex: 1;
+    flex: 2;
 }
 
 .result-placeholder {
@@ -468,6 +480,7 @@
     color: #aaffaa;
     font-style: italic;
     font-size: 16px;
+    margin-top: 6px;
 }
 
 .pw-penalty {
@@ -511,9 +524,47 @@
 
 .appfooter {
     margin: 48px 0;
+    width: 100%;
+
+    background-color: #110d1d;
+    border-radius: 16px;
+    padding: 32px;
 }
+
 .footertext {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footertop,
+.footermid,
+.footerbot {
+    background: transparent;
+    color: #aaa;
+    font-size: 14px;
+    font-style: italic;
+    text-align: center;
+}
+
+.footertext a {
+    background: transparent;
     color: #fafafa;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.footertext a:hover {
+    color: #55ffff;
+}
+
+@media (max-width: 1024px) {
+    .step-container {
+        padding: 0;
+    }
 }
 
 @media (max-width: 900px) {
@@ -521,8 +572,9 @@
         flex-direction: column;
     }
 
-    .summary-cost {
-        margin-top: 20px;
+    .result-summary {
+        border-top: 4px solid #ccc;
+        padding-top: 32px;
     }
 
     .step-container {
@@ -536,7 +588,7 @@
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
     .books-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 }
 @media (max-width: 700px) {
@@ -549,6 +601,34 @@
         width: 85%;
     }
 }
+
+@media (max-width: 570px) {
+    .step-container {
+        margin-bottom: 16px;
+    }
+    .result-summary {
+        padding-bottom: 0;
+    }
+    .summary-cost {
+        font-size: 20px;
+    }
+    .summary-header,
+    .steps-title,
+    .step-number,
+    .result-label,
+    .cost-info {
+        font-size: 14px;
+    }
+
+    .step-number {
+        margin-bottom: 4px;
+    }
+
+    .result-view {
+        margin: 4px 0;
+    }
+}
+
 @media (max-width: 425px) {
     .guidebtn {
         font-size: 14px;
@@ -556,5 +636,23 @@
         margin: 0 auto;
         margin-top: 6px;
         padding: 6px 16px;
+    }
+
+    .item-name,
+    .enchantment {
+        font-size: 14px;
+    }
+
+    .item-name {
+        margin-bottom: 4px;
+    }
+
+    .item-enchantments {
+        padding-left: 6px;
+    }
+
+    .cat-btn,
+    .subcat-btn {
+        padding: 4px 14px;
     }
 }

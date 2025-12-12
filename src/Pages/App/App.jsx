@@ -1,4 +1,3 @@
-// App.jsx
 import React from "react";
 import "./App.css";
 import { itemEnchantMap, conflictMap } from "./../../data/enchantmentData";
@@ -20,6 +19,10 @@ const App = () => {
     const [errorMessage, setErrorMessage] = React.useState("");
     // Result state
     const [calculationResult, setCalculationResult] = React.useState(null);
+
+    // NEW: botright ref + loading state for the requested feature
+    const botrightRef = React.useRef(null);
+    const [isLoading, setIsLoading] = React.useState(false);
 
     // Get current enchantments based on selected item
     const currentEnchants = selectedSub
@@ -180,6 +183,45 @@ const App = () => {
             setErrorMessage(`Calculation error: ${error.message}`);
             console.error("Calculation failed:", error);
         }
+    };
+
+    // NEW: wrapper to show loading text, perform scroll, then run validation/calculation
+    const handleCalculateClick = () => {
+        // Show loading text (replaces botright content)
+        setIsLoading(true);
+
+        // Scroll behavior
+        if (typeof window !== "undefined") {
+            if (window.innerWidth > 900) {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            } else {
+                // scroll to botright div
+                if (botrightRef.current && botrightRef.current.scrollIntoView) {
+                    try {
+                        botrightRef.current.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                        });
+                    } catch (e) {
+                        // fallback
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            }
+        }
+
+        // Allow a tick for the loading text / scroll to render, then run calculation.
+        // (Using a short timeout so the UI can show "Results Loading" before heavy sync work.)
+        setTimeout(() => {
+            try {
+                validateAndCalculate();
+            } finally {
+                // hide loading once result or error is set
+                setIsLoading(false);
+            }
+        }, 60);
     };
 
     // Format the calculation result for display
@@ -986,7 +1028,7 @@ const App = () => {
                                     <div className="calculate-section">
                                         <button
                                             className="calculate-btn"
-                                            onClick={validateAndCalculate}
+                                            onClick={handleCalculateClick}
                                             disabled={!selectedSub}
                                         >
                                             Calculate
@@ -996,8 +1038,12 @@ const App = () => {
                             );
                         })()}
                     </div>
-                    <div className="botright">
-                        {calculationResult ? (
+                    <div className="botright" ref={botrightRef}>
+                        {isLoading ? (
+                            <div className="results-loading">
+                                Results Loading
+                            </div>
+                        ) : calculationResult ? (
                             <div className="calculation-result">
                                 {!calculationResult.success ? (
                                     <div className="error-result">
@@ -1210,7 +1256,32 @@ const App = () => {
                 </div>
             </div>
             <div className="appfooter">
-                <p className="footertext">Footer Xd</p>
+                <div className="footertext">
+                    <p className="footertop">
+                        Inspired By{" "}
+                        <a
+                            href="https://iamcal.github.io/enchant-order/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Cal Henderson's Tool
+                        </a>
+                    </p>
+                    <p className="footermid">
+                        Font By{" "}
+                        <a
+                            href="https://www.fontspace.com/jdgraphics"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            JDGraphics
+                        </a>
+                    </p>
+                    <p className="footerbot">
+                        More Such Tools to Come, please support me at
+                        BuyMeACoffee
+                    </p>
+                </div>
             </div>
         </div>
     );
