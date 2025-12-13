@@ -147,7 +147,7 @@ function combine(aInput, bInput) {
     let a = aInput;
     let b = bInput;
     let swapped = false;
-    // if a is a book but b is not, the game treats the non-book as left; preserve earlier behavior
+    // if a is a book but b is not, swap so non-book is left (mirror in-game behavior)
     if (a.isBook && !b.isBook) {
         const tmp = a;
         a = b;
@@ -228,6 +228,22 @@ function removeConflictsWithTarget(enchantObj, targetEnch) {
         if (!conflicts) result[k] = v;
     }
     return result;
+}
+
+// helper to check whether a node (non-book) has any enchantments that conflict with the target base enchants
+function nodeHasConflictWithTarget(node, targetBaseEnch) {
+    if (!node || !node.ench) return false;
+    const nodeKeys = Object.keys(node.ench);
+    const targetKeys = Object.keys(targetBaseEnch || {});
+    if (nodeKeys.length === 0 || targetKeys.length === 0) return false;
+    for (const nk of nodeKeys) {
+        for (const tk of targetKeys) {
+            if (enchantmentsConflict(nk, tk) || enchantmentsConflict(tk, nk)) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 export function computeOptimalEnchantPlan(data) {
@@ -326,8 +342,31 @@ export function computeOptimalEnchantPlan(data) {
                     aIdx = j;
                     bIdx = i;
                 }
-                const result = combine(state.nodes[aIdx], state.nodes[bIdx]);
+
+                // Quick local references for readability
+                const aNode = state.nodes[aIdx];
+                const bNode = state.nodes[bIdx];
+
+                const result = combine(aNode, bNode);
                 if (!result) continue;
+
+                // PRUNING: Avoid pointless intermediate merges where a BOOK is applied to a non-target
+                // item that contains enchantments which WOULD BE discarded later when combined with the target.
+                //
+                // Rationale: if bNode (right) is a BOOK and aNode (left) is non-target, and aNode has at least one
+                // enchant that conflicts with the target's base enchants, then applying the book to aNode first
+                // is wasteful: the book could instead be applied directly to the target later (or earlier),
+                // avoiding extra prior-work penalties. Skip such merges to remove meaningless steps.
+                //
+                // We already filtered out books that conflict with the target earlier, so it's safe to assume
+                // the book's enchantments could be applied to the target if needed.
+                if (bNode.isBook && !result.node.isTarget) {
+                    // if the non-book operand (aNode) has any enchantment that conflicts with the target, skip this merge
+                    if (nodeHasConflictWithTarget(aNode, targetBaseEnch)) {
+                        // skip this combine as it's likely a wasteful intermediate step
+                        continue;
+                    }
+                }
 
                 // Ensure the resulting node inherits isTarget if either input had it.
                 result.node.isTarget = !!(

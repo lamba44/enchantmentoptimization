@@ -375,17 +375,17 @@ const App = () => {
 
     return (
         <div className="container">
-            <h1 className="appheader">MINECRAFT ENCHANTING TOOL</h1>
+            <h1 className="appheader">MINECRAFT ENCHANTING OPTIMIZER</h1>
             <div className="bentogrid">
                 <div className="topsect">
                     <div className="introbox">
                         <p className="intro-desc">
-                            An enchanting calculator that helps you find the
+                            Plan the most efficient anvil combinations to
                             <span className="highlight">
                                 {" "}
-                                most optimal enchanting order{" "}
+                                minimize XP cost{" "}
                             </span>
-                            minimizing XP cost and avoiding the dreaded
+                            and avoid the dreaded
                             <span className="dangerword">
                                 {" "}
                                 "Too Expensive!"
@@ -437,6 +437,7 @@ const App = () => {
                             return (
                                 <>
                                     {/* Category buttons */}
+                                    <p className="cat-help">Select Item:</p>
                                     <div className="cat-select">
                                         {Object.keys(subcats).map((cat) => (
                                             <button
@@ -516,15 +517,16 @@ const App = () => {
                                                     }}
                                                 />
                                                 <span>
-                                                    Existing Enchantments on
-                                                    Target Item
+                                                    Existing enchantments on
+                                                    your {selectedSub} (uncheck
+                                                    if none)
                                                 </span>
                                             </label>
                                             {existingEnchantsChecked && (
                                                 <div className="existing-enchants-grid">
                                                     <div className="existing-enchants-title">
-                                                        Select existing
-                                                        enchantments on your{" "}
+                                                        Select the enchantments
+                                                        already present on your{" "}
                                                         {selectedSub}:
                                                     </div>
                                                     <div className="sac-enchants-grid">
@@ -685,6 +687,9 @@ const App = () => {
                                     {/* --- Sacrifice UI only appears when target is selected --- */}
                                     {selectedSub && (
                                         <>
+                                            <p className="cat-help-sac">
+                                                Select Combining Mode:
+                                            </p>
                                             <div className="sac-mode-row">
                                                 {["Books", "Item & Books"].map(
                                                     (m) => (
@@ -713,8 +718,7 @@ const App = () => {
                                             {/* Prompt to select mode if none is selected */}
                                             {!sacMode && (
                                                 <div className="mode-prompt">
-                                                    Please select a sacrifice
-                                                    mode above
+                                                    Please select a mode above
                                                 </div>
                                             )}
                                             {/* Books editor (shown when mode is Books) */}
@@ -722,7 +726,8 @@ const App = () => {
                                                 <div className="sac-books-editor">
                                                     <div className="books-header">
                                                         <div className="books-title">
-                                                            Books to use:
+                                                            Enchanted Books to
+                                                            use:
                                                         </div>
                                                     </div>
                                                     <div className="books-grid">
@@ -862,9 +867,10 @@ const App = () => {
                                                             </div>
                                                             <div className="sac-item-subtitle">
                                                                 Select
-                                                                enchantments on
-                                                                the sacrifice
-                                                                item
+                                                                enchantments
+                                                                present on the
+                                                                sacrifice{" "}
+                                                                {selectedSub}
                                                             </div>
                                                         </div>
                                                         <div className="sac-enchants-grid">
@@ -995,7 +1001,8 @@ const App = () => {
                                                     <div className="sac-books-editor">
                                                         <div className="books-header">
                                                             <div className="books-title">
-                                                                Books to use:
+                                                                Enchanted Books
+                                                                to use:
                                                             </div>
                                                         </div>
                                                         <div className="books-grid">
@@ -1264,7 +1271,7 @@ const App = () => {
                                                         </div>
                                                         <div className="result-view">
                                                             <div className="result-label">
-                                                                Result:
+                                                                Outcome:
                                                             </div>
                                                             <div className="item-box result-item">
                                                                 <div className="item-name">
@@ -1322,7 +1329,7 @@ const App = () => {
 
                                         <div className="final-item-section">
                                             <div className="final-item-label">
-                                                Final item:
+                                                Final Enchanted Item:
                                             </div>
                                             <div className="item-box final-item">
                                                 <div className="item-name">
@@ -1386,8 +1393,15 @@ const App = () => {
                         </a>
                     </p>
                     <p className="footerbot">
-                        More Such Tools to Come, please support me at
-                        BuyMeACoffee
+                        More such tools are planned. If this tool helped you,
+                        consider supporting me and my projects on{" "}
+                        <a
+                            href="https://buymeacoffee.com/codewithbottle"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Buy Me a Coffee.
+                        </a>
                     </p>
                 </div>
             </div>
