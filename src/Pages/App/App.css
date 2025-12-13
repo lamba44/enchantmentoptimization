@@ -266,7 +266,6 @@
 }
 .enchant-card.disabled {
     opacity: 0.6;
-    cursor: not-allowed;
 }
 .enchant-header {
     display: flex;
@@ -340,7 +339,7 @@
 .error-message {
     margin: 16px 0;
     padding: 12px;
-    background-color: rgba(170, 55, 55, 0.2);
+    background-color: #aa373733;
     border: 1px solid #aa3737;
     color: #ff8888;
     border-radius: 8px;
@@ -388,10 +387,18 @@
 }
 
 .result-placeholder {
-    color: #aaa;
+    margin: 16px 0;
+    padding: 12px;
+    background-color: #55aa5533;
+    border: 1px solid #3d8f3d;
+    border-radius: 8px;
     text-align: center;
-    padding: 20px;
     font-style: italic;
+}
+
+.result-placeholder p {
+    background: transparent;
+    font-size: 14px;
 }
 
 .calculation-result {
@@ -563,7 +570,7 @@
 .footertext a {
     background: transparent;
     color: #fafafa;
-    text-decoration: none;
+    text-decoration: underline;
     transition: all 0.2s ease;
 }
 

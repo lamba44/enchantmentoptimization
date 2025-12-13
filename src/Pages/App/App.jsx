@@ -6,32 +6,29 @@ import { computeOptimalEnchantPlan } from "./../../data/enchantCalculator";
 const App = () => {
     const [selectedCat, setSelectedCat] = React.useState(null);
     const [selectedSub, setSelectedSub] = React.useState(null);
-    // --- Updated sacrifice modes ---
+    // --- Sacrifice modes ---
     const [sacMode, setSacMode] = React.useState(null); // null | "Books" | "Item & Books"
     const [sacItem, setSacItem] = React.useState(null);
     const [sacItemEnchants, setSacItemEnchants] = React.useState({});
     const [sacBooksEnchants, setSacBooksEnchants] = React.useState({});
-    // Added state for existing target item enchantments
+    // Existing target item enchantments
     const [existingEnchantsChecked, setExistingEnchantsChecked] =
         React.useState(false);
     const [targetItemEnchants, setTargetItemEnchants] = React.useState({});
-    // Error message state
+    // Error / result / loading state
     const [errorMessage, setErrorMessage] = React.useState("");
-    // Result state
     const [calculationResult, setCalculationResult] = React.useState(null);
-
-    // NEW: botright ref + loading state for the requested feature
-    const botrightRef = React.useRef(null);
     const [isLoading, setIsLoading] = React.useState(false);
+    const botrightRef = React.useRef(null);
 
     // Get current enchantments based on selected item
     const currentEnchants = selectedSub
         ? itemEnchantMap[selectedSub] || []
         : [];
 
-    // Helper function to check if an enchantment has conflicts with selected ones (within same set)
-    const hasConflict = (enchName, enchantments) => {
-        for (const selectedEnch in enchantments) {
+    // Helper: check if 'enchName' conflicts with any enchant selected within the given 'enchantSet'
+    const hasConflict = (enchName, enchantSet) => {
+        for (const selectedEnch in enchantSet) {
             if (conflictMap[selectedEnch]?.includes(enchName)) {
                 return true;
             }
@@ -39,28 +36,11 @@ const App = () => {
         return false;
     };
 
-    // New helper to check conflict with target selected enchants (target has priority)
-    const conflictsWithTarget = (enchName) => {
-        if (!existingEnchantsChecked) return false;
-        for (const te in targetItemEnchants) {
-            if (
-                conflictMap[te]?.includes(enchName) ||
-                conflictMap[enchName]?.includes(te)
-            ) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    // --- Automatically sync sacItem to selectedSub ---
+    // Sync sacItem to selectedSub and reset per-item selections when changing target
     React.useEffect(() => {
         if (selectedSub) {
             setSacItem(selectedSub);
-
-            // NEW: when switching to a new selectedSub, clear all per-item enchant selections
-            // This prevents enchantments from the previous item (e.g., mace) persisting
-            // when the user selects a different target item (e.g., bow).
+            // Clear per-item enchant selections to avoid leftover state
             setSacItemEnchants({});
             setSacBooksEnchants({});
             setTargetItemEnchants({});
@@ -68,7 +48,6 @@ const App = () => {
             setErrorMessage("");
             setCalculationResult(null);
         } else {
-            // Reset everything when target is cleared
             setSacItem(null);
             setSacItemEnchants({});
             setSacBooksEnchants({});
@@ -80,38 +59,12 @@ const App = () => {
         }
     }, [selectedSub]);
 
-    // When the user toggles/changes target enchantments, remove any selected
-    // **books** that conflict with the target (but do NOT clear sacrifice item enchants).
-    React.useEffect(() => {
-        if (!existingEnchantsChecked) return;
-        // Only filter sacBooksEnchants (books should be blocked); keep sacItemEnchants intact.
-        setSacBooksEnchants((prev) => {
-            const copy = { ...prev };
-            for (const key of Object.keys(copy)) {
-                for (const te of Object.keys(targetItemEnchants)) {
-                    if (
-                        conflictMap[te]?.includes(key) ||
-                        conflictMap[key]?.includes(te)
-                    ) {
-                        delete copy[key];
-                        break;
-                    }
-                }
-            }
-            return copy;
-        });
-    }, [existingEnchantsChecked, targetItemEnchants]);
-
-    // --- handlers for enchantments (generic) ---
-    // Add 'isBook' flag so we only block toggling when the enchant belongs to a book.
-    const toggleEnchant = (ename, setEnchants, enchants, isBook = false) => {
-        // Only prevent toggling if it's a BOOK enchant that conflicts with the target.
-        if (isBook && existingEnchantsChecked && conflictsWithTarget(ename))
-            return;
+    // Unified toggle that only affects the provided set (no cross-set effects)
+    const handleToggle = (ename, setEnchants, enchants) => {
         setEnchants((prev) => {
             const copy = { ...prev };
-            // If enabling, remove any conflicting enchantments
             if (!copy[ename]) {
+                // enabling: remove any conflicting enchants in the same set ONLY
                 for (const existingEnch in copy) {
                     if (conflictMap[ename]?.includes(existingEnch)) {
                         delete copy[existingEnch];
@@ -126,16 +79,14 @@ const App = () => {
         });
     };
 
-    // setEnchantLevel now accepts isBook flag to prevent leveling books conflicting with target.
-    const setEnchantLevel = (ename, lvl, setEnchants, isBook = false) => {
-        if (isBook && existingEnchantsChecked && conflictsWithTarget(ename))
-            return;
+    // Set enchant level within a set (no cross-set effects)
+    const handleSetEnchantLevel = (ename, lvl, setEnchants, enchants) => {
         setEnchants((prev) => {
             const copy = { ...prev };
             if (lvl <= 0) {
                 delete copy[ename];
             } else {
-                // Remove conflicting enchantments when setting level
+                // Remove same-set conflicting enchants
                 for (const existingEnch in copy) {
                     if (conflictMap[ename]?.includes(existingEnch)) {
                         delete copy[existingEnch];
@@ -147,18 +98,16 @@ const App = () => {
         });
     };
 
-    // Validation and calculation function
+    // Validate input and run calculation
     const validateAndCalculate = () => {
         setErrorMessage("");
         setCalculationResult(null);
 
-        // Check if target item is selected
         if (!selectedSub) {
             setErrorMessage("Error: No target item selected.");
             return;
         }
 
-        // Check existing enchantments if checkbox is checked
         if (
             existingEnchantsChecked &&
             Object.keys(targetItemEnchants).length === 0
@@ -169,13 +118,11 @@ const App = () => {
             return;
         }
 
-        // Check sacrifice mode is selected
         if (!sacMode) {
             setErrorMessage("Error: No sacrifice mode selected.");
             return;
         }
 
-        // Validate based on sacrifice mode
         if (sacMode === "Books") {
             if (Object.keys(sacBooksEnchants).length === 0) {
                 setErrorMessage("Error: No books selected for sacrifice.");
@@ -201,7 +148,6 @@ const App = () => {
             }
         }
 
-        // If all validations pass, collect and calculate
         const calculationData = {
             targetItem: selectedSub,
             existingEnchantments: existingEnchantsChecked
@@ -228,17 +174,14 @@ const App = () => {
         }
     };
 
-    // NEW: wrapper to show loading text, perform scroll, then run validation/calculation
+    // Calculate click wrapper for small UX niceties
     const handleCalculateClick = () => {
-        // Show loading text (replaces botright content)
         setIsLoading(true);
 
-        // Scroll behavior
         if (typeof window !== "undefined") {
             if (window.innerWidth > 900) {
                 window.scrollTo({ top: 0, behavior: "smooth" });
             } else {
-                // scroll to botright div
                 if (botrightRef.current && botrightRef.current.scrollIntoView) {
                     try {
                         botrightRef.current.scrollIntoView({
@@ -246,7 +189,6 @@ const App = () => {
                             block: "center",
                         });
                     } catch (e) {
-                        // fallback
                         window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                 } else {
@@ -255,19 +197,16 @@ const App = () => {
             }
         }
 
-        // Allow a tick for the loading text / scroll to render, then run calculation.
-        // (Using a short timeout so the UI can show "Results Loading" before heavy sync work.)
         setTimeout(() => {
             try {
                 validateAndCalculate();
             } finally {
-                // hide loading once result or error is set
                 setIsLoading(false);
             }
         }, 60);
     };
 
-    // Format the calculation result for display
+    // Helpers for result display
     const formatResult = (result) => {
         if (!result) return "";
 
@@ -292,13 +231,11 @@ const App = () => {
                 }\n`;
                 output += `   Result: ${step.result}\n`;
                 output += `   Cost: ${step.levels} levels (${step.xp} XP)`;
-
                 if (step.pw > 0) {
                     output += `, Prior Work Penalty: ${step.pw} level${
                         step.pw === 1 ? "" : "s"
                     }`;
                 }
-
                 output += "\n";
             });
         }
@@ -308,7 +245,6 @@ const App = () => {
         return output;
     };
 
-    // Helper function to display item with enchantments
     const disp = (item) => {
         const e = Object.entries(item.ench)
             .map(([k, v]) => k + " " + toRoman(v))
@@ -318,7 +254,6 @@ const App = () => {
             : item.item + (e ? " (" + e + ")" : "");
     };
 
-    // Helper function to convert numbers to Roman numerals
     const toRoman = (num) => {
         if (num <= 0) return "0";
         const lookup = {
@@ -346,7 +281,6 @@ const App = () => {
         return roman;
     };
 
-    // Helper functions for formatting items
     const extractItemName = (itemString) => {
         if (!itemString) return "";
         const match = itemString.match(/^([^(]+)/);
@@ -357,7 +291,6 @@ const App = () => {
         if (!itemString) return [];
         const match = itemString.match(/\(([^)]+)\)/);
         if (!match) return [];
-
         return match[1]
             .split(",")
             .map((enchant) => enchant.trim())
@@ -377,7 +310,7 @@ const App = () => {
         <div className="container">
             <h1 className="appheader">MINECRAFT ENCHANTING OPTIMIZER</h1>
             <div className="bentogrid">
-                <div className="topsect">
+                <header className="topsect" role="banner">
                     <div className="introbox">
                         <p className="intro-desc">
                             Plan the most efficient anvil combinations to
@@ -398,11 +331,11 @@ const App = () => {
                             </span>
                         </div>
                         <a href="/guide" className="guidebtn">
-                            Learn How It Works
+                            Guide
                         </a>
                     </div>
-                </div>
-                <div className="bottomsect">
+                </header>
+                <main className="bottomsect" role="main">
                     <div className="botleft">
                         {(() => {
                             const subcats = {
@@ -436,7 +369,6 @@ const App = () => {
                             };
                             return (
                                 <>
-                                    {/* Category buttons */}
                                     <p className="cat-help">Select Item:</p>
                                     <div className="cat-select">
                                         {Object.keys(subcats).map((cat) => (
@@ -461,7 +393,7 @@ const App = () => {
                                             </button>
                                         ))}
                                     </div>
-                                    {/* Subcategory container always rendered */}
+
                                     <div
                                         className={`subcat-select subcat-container ${
                                             selectedCat ? "visible" : "hidden"
@@ -492,7 +424,7 @@ const App = () => {
                                                 </button>
                                             ))}
                                     </div>
-                                    {/* Existing enchantments checkbox for target item */}
+
                                     {selectedSub && (
                                         <div className="existing-enchants-section">
                                             <label className="existing-enchants-label">
@@ -522,6 +454,7 @@ const App = () => {
                                                     if none)
                                                 </span>
                                             </label>
+
                                             {existingEnchantsChecked && (
                                                 <div className="existing-enchants-grid">
                                                     <div className="existing-enchants-title">
@@ -560,22 +493,18 @@ const App = () => {
                                                                                 : ""
                                                                         }`}
                                                                         onClick={() => {
-                                                                            if (
-                                                                                !isDisabled
-                                                                            ) {
-                                                                                toggleEnchant(
-                                                                                    ench.name,
-                                                                                    setTargetItemEnchants,
-                                                                                    targetItemEnchants,
-                                                                                    false
-                                                                                );
-                                                                                setErrorMessage(
-                                                                                    ""
-                                                                                );
-                                                                                setCalculationResult(
-                                                                                    null
-                                                                                );
-                                                                            }
+                                                                            // Toggle only within targetItemEnchants
+                                                                            handleToggle(
+                                                                                ench.name,
+                                                                                setTargetItemEnchants,
+                                                                                targetItemEnchants
+                                                                            );
+                                                                            setErrorMessage(
+                                                                                ""
+                                                                            );
+                                                                            setCalculationResult(
+                                                                                null
+                                                                            );
                                                                         }}
                                                                     >
                                                                         <div className="enchant-header">
@@ -622,11 +551,11 @@ const App = () => {
                                                                                                 e
                                                                                             ) => {
                                                                                                 e.stopPropagation();
-                                                                                                setEnchantLevel(
+                                                                                                handleSetEnchantLevel(
                                                                                                     ench.name,
                                                                                                     lvl,
                                                                                                     setTargetItemEnchants,
-                                                                                                    false
+                                                                                                    targetItemEnchants
                                                                                                 );
                                                                                                 setErrorMessage(
                                                                                                     ""
@@ -653,7 +582,7 @@ const App = () => {
                                             )}
                                         </div>
                                     )}
-                                    {/* Slots ALWAYS visible */}
+
                                     <div className="slots-area">
                                         <div className="slot target-slot">
                                             {selectedSub || "Select item"}
@@ -663,28 +592,19 @@ const App = () => {
                                             className="slot sacrifice-slot"
                                             title="Select sacrifice mode below"
                                         >
-                                            {selectedSub ? (
-                                                sacMode ? (
-                                                    <>
-                                                        {sacMode === "Books" &&
-                                                            "Enchanted Books"}
-                                                        {sacMode ===
-                                                            "Item & Books" && (
-                                                            <>
-                                                                {sacItem ||
-                                                                    "Same item + books"}
-                                                            </>
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    "Select mode"
-                                                )
-                                            ) : (
-                                                "Select target first"
-                                            )}
+                                            {selectedSub
+                                                ? sacMode
+                                                    ? (sacMode === "Books" &&
+                                                          "Enchanted Books") ||
+                                                      (sacMode ===
+                                                          "Item & Books" &&
+                                                          (sacItem ||
+                                                              "Same item + books"))
+                                                    : "Select mode"
+                                                : "Select target first"}
                                         </div>
                                     </div>
-                                    {/* --- Sacrifice UI only appears when target is selected --- */}
+
                                     {selectedSub && (
                                         <>
                                             <p className="cat-help-sac">
@@ -715,13 +635,14 @@ const App = () => {
                                                     )
                                                 )}
                                             </div>
-                                            {/* Prompt to select mode if none is selected */}
+
                                             {!sacMode && (
                                                 <div className="mode-prompt">
                                                     Please select a mode above
                                                 </div>
                                             )}
-                                            {/* Books editor (shown when mode is Books) */}
+
+                                            {/* Sacrifice Books */}
                                             {sacMode === "Books" && (
                                                 <div className="sac-books-editor">
                                                     <div className="books-header">
@@ -739,13 +660,10 @@ const App = () => {
                                                                             .name
                                                                     ] || 0;
                                                                 const isDisabled =
-                                                                    (!selectedLevel &&
-                                                                        hasConflict(
-                                                                            ench.name,
-                                                                            sacBooksEnchants
-                                                                        )) ||
-                                                                    conflictsWithTarget(
-                                                                        ench.name
+                                                                    !selectedLevel &&
+                                                                    hasConflict(
+                                                                        ench.name,
+                                                                        sacBooksEnchants
                                                                     );
                                                                 const isActive =
                                                                     !!selectedLevel;
@@ -764,22 +682,18 @@ const App = () => {
                                                                                 : ""
                                                                         }`}
                                                                         onClick={() => {
-                                                                            if (
-                                                                                !isDisabled
-                                                                            ) {
-                                                                                toggleEnchant(
-                                                                                    ench.name,
-                                                                                    setSacBooksEnchants,
-                                                                                    sacBooksEnchants,
-                                                                                    true
-                                                                                );
-                                                                                setErrorMessage(
-                                                                                    ""
-                                                                                );
-                                                                                setCalculationResult(
-                                                                                    null
-                                                                                );
-                                                                            }
+                                                                            // Toggle only within sacBooksEnchants
+                                                                            handleToggle(
+                                                                                ench.name,
+                                                                                setSacBooksEnchants,
+                                                                                sacBooksEnchants
+                                                                            );
+                                                                            setErrorMessage(
+                                                                                ""
+                                                                            );
+                                                                            setCalculationResult(
+                                                                                null
+                                                                            );
                                                                         }}
                                                                     >
                                                                         <div className="enchant-header">
@@ -826,11 +740,11 @@ const App = () => {
                                                                                                 e
                                                                                             ) => {
                                                                                                 e.stopPropagation();
-                                                                                                setEnchantLevel(
+                                                                                                handleSetEnchantLevel(
                                                                                                     ench.name,
                                                                                                     lvl,
                                                                                                     setSacBooksEnchants,
-                                                                                                    true
+                                                                                                    sacBooksEnchants
                                                                                                 );
                                                                                                 setErrorMessage(
                                                                                                     ""
@@ -855,10 +769,10 @@ const App = () => {
                                                     </div>
                                                 </div>
                                             )}
-                                            {/* Item & Books editor */}
+
+                                            {/* Sacrifice Item & Books */}
                                             {sacMode === "Item & Books" && (
                                                 <>
-                                                    {/* Sacrifice Item Section */}
                                                     <div className="sac-item-editor">
                                                         <div className="sac-item-header">
                                                             <div className="sac-item-title">
@@ -881,9 +795,6 @@ const App = () => {
                                                                             ench
                                                                                 .name
                                                                         ] || 0;
-                                                                    // IMPORTANT: Do NOT disable sac-item enchant options due to conflicts with the target.
-                                                                    // Sacrifice item enchantments may conflict with the target but should be selectable;
-                                                                    // they will be discarded by the anvil logic (left-item priority) when combined.
                                                                     const isDisabled =
                                                                         !selectedLevel &&
                                                                         hasConflict(
@@ -907,22 +818,18 @@ const App = () => {
                                                                                     : ""
                                                                             }`}
                                                                             onClick={() => {
-                                                                                if (
-                                                                                    !isDisabled
-                                                                                ) {
-                                                                                    toggleEnchant(
-                                                                                        ench.name,
-                                                                                        setSacItemEnchants,
-                                                                                        sacItemEnchants,
-                                                                                        false
-                                                                                    );
-                                                                                    setErrorMessage(
-                                                                                        ""
-                                                                                    );
-                                                                                    setCalculationResult(
-                                                                                        null
-                                                                                    );
-                                                                                }
+                                                                                // Toggle only within sacItemEnchants
+                                                                                handleToggle(
+                                                                                    ench.name,
+                                                                                    setSacItemEnchants,
+                                                                                    sacItemEnchants
+                                                                                );
+                                                                                setErrorMessage(
+                                                                                    ""
+                                                                                );
+                                                                                setCalculationResult(
+                                                                                    null
+                                                                                );
                                                                             }}
                                                                         >
                                                                             <div className="enchant-header">
@@ -969,11 +876,11 @@ const App = () => {
                                                                                                     e
                                                                                                 ) => {
                                                                                                     e.stopPropagation();
-                                                                                                    setEnchantLevel(
+                                                                                                    handleSetEnchantLevel(
                                                                                                         ench.name,
                                                                                                         lvl,
                                                                                                         setSacItemEnchants,
-                                                                                                        false
+                                                                                                        sacItemEnchants
                                                                                                     );
                                                                                                     setErrorMessage(
                                                                                                         ""
@@ -997,7 +904,7 @@ const App = () => {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    {/* Books Section */}
+
                                                     <div className="sac-books-editor">
                                                         <div className="books-header">
                                                             <div className="books-title">
@@ -1014,13 +921,10 @@ const App = () => {
                                                                                 .name
                                                                         ] || 0;
                                                                     const isDisabled =
-                                                                        (!selectedLevel &&
-                                                                            hasConflict(
-                                                                                ench.name,
-                                                                                sacBooksEnchants
-                                                                            )) ||
-                                                                        conflictsWithTarget(
-                                                                            ench.name
+                                                                        !selectedLevel &&
+                                                                        hasConflict(
+                                                                            ench.name,
+                                                                            sacBooksEnchants
                                                                         );
                                                                     const isActive =
                                                                         !!selectedLevel;
@@ -1039,22 +943,18 @@ const App = () => {
                                                                                     : ""
                                                                             }`}
                                                                             onClick={() => {
-                                                                                if (
-                                                                                    !isDisabled
-                                                                                ) {
-                                                                                    toggleEnchant(
-                                                                                        ench.name,
-                                                                                        setSacBooksEnchants,
-                                                                                        sacBooksEnchants,
-                                                                                        true
-                                                                                    );
-                                                                                    setErrorMessage(
-                                                                                        ""
-                                                                                    );
-                                                                                    setCalculationResult(
-                                                                                        null
-                                                                                    );
-                                                                                }
+                                                                                // Toggle only within sacBooksEnchants
+                                                                                handleToggle(
+                                                                                    ench.name,
+                                                                                    setSacBooksEnchants,
+                                                                                    sacBooksEnchants
+                                                                                );
+                                                                                setErrorMessage(
+                                                                                    ""
+                                                                                );
+                                                                                setCalculationResult(
+                                                                                    null
+                                                                                );
                                                                             }}
                                                                         >
                                                                             <div className="enchant-header">
@@ -1101,11 +1001,11 @@ const App = () => {
                                                                                                     e
                                                                                                 ) => {
                                                                                                     e.stopPropagation();
-                                                                                                    setEnchantLevel(
+                                                                                                    handleSetEnchantLevel(
                                                                                                         ench.name,
                                                                                                         lvl,
                                                                                                         setSacBooksEnchants,
-                                                                                                        true
+                                                                                                        sacBooksEnchants
                                                                                                     );
                                                                                                     setErrorMessage(
                                                                                                         ""
@@ -1133,13 +1033,13 @@ const App = () => {
                                             )}
                                         </>
                                     )}
-                                    {/* Error message display */}
+
                                     {errorMessage && (
                                         <div className="error-message">
                                             {errorMessage}
                                         </div>
                                     )}
-                                    {/* Calculate button */}
+
                                     <div className="calculate-section">
                                         <button
                                             className="calculate-btn"
@@ -1153,6 +1053,7 @@ const App = () => {
                             );
                         })()}
                     </div>
+
                     <div className="botright" ref={botrightRef}>
                         {isLoading ? (
                             <div className="results-loading">
@@ -1368,9 +1269,10 @@ const App = () => {
                             </div>
                         )}
                     </div>
-                </div>
+                </main>
             </div>
-            <div className="appfooter">
+
+            <footer className="appfooter" role="contentinfo">
                 <div className="footertext">
                     <p className="footertop">
                         Inspired By{" "}
@@ -1404,8 +1306,9 @@ const App = () => {
                         </a>
                     </p>
                 </div>
-            </div>
+            </footer>
         </div>
     );
 };
+
 export default App;
