@@ -60,6 +60,13 @@
 .badge.java {
     background-color: #1d5c99;
 }
+.badge.coffee {
+    background-color: #806b00;
+}
+.badge a {
+    text-decoration: none;
+    background-color: transparent;
+}
 .guidebtn {
     display: inline-block;
     margin: 0 auto;
@@ -539,43 +546,38 @@
     margin-top: 6px;
 }
 
-.appfooter {
-    margin: 48px 0;
+.results-loading {
+    padding-top: 60px;
     width: 100%;
-
-    background-color: #110d1d;
-    border-radius: 16px;
-    padding: 32px;
-}
-
-.footertext {
-    background: transparent;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    gap: 12px;
+    gap: 5px;
 }
-
-.footertop,
-.footermid,
-.footerbot {
-    background: transparent;
-    color: #aaa;
-    font-size: 14px;
-    font-style: italic;
-    text-align: center;
+.results-loading:before,
+.results-loading:after {
+    content: "";
+    width: 25px;
+    aspect-ratio: 1;
+    box-shadow: 0 0 0 3px inset #fff;
+    animation: l5 1.5s infinite;
 }
-
-.footertext a {
-    background: transparent;
-    color: #fafafa;
-    text-decoration: underline;
-    transition: all 0.2s ease;
+.results-loading:after {
+    --s: -1;
 }
-
-.footertext a:hover {
-    color: #55ffff;
+@keyframes l5 {
+    0% {
+        transform: scaleX(var(--s, 1)) translate(0) scale(1);
+    }
+    33% {
+        transform: scaleX(var(--s, 1)) translate(calc(50% + 2.5px)) scale(1);
+    }
+    66% {
+        transform: scaleX(var(--s, 1)) translate(calc(50% + 2.5px)) scale(2);
+    }
+    100% {
+        transform: scaleX(var(--s, 1)) translate(0) scale(1);
+    }
 }
 
 @media (max-width: 1024px) {

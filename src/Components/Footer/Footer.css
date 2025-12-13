@@ -1,0 +1,38 @@
+.appfooter {
+    margin: 48px 0;
+    width: 100%;
+
+    background-color: #110d1d;
+    border-radius: 16px;
+    padding: 32px;
+}
+
+.footertext {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footertop,
+.footermid,
+.footerbot {
+    background: transparent;
+    color: #aaa;
+    font-size: 14px;
+    font-style: italic;
+    text-align: center;
+}
+
+.footertext a {
+    background: transparent;
+    color: #fafafa;
+    text-decoration: underline;
+    transition: all 0.2s ease;
+}
+
+.footertext a:hover {
+    color: #55ffff;
+}

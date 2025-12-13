@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import { itemEnchantMap, conflictMap } from "./../../data/enchantmentData";
 import { computeOptimalEnchantPlan } from "./../../data/enchantCalculator";
+import Footer from "../../Components/Footer/Footer";
 
 const App = () => {
     const [selectedCat, setSelectedCat] = React.useState(null);
@@ -177,25 +178,8 @@ const App = () => {
     // Calculate click wrapper for small UX niceties
     const handleCalculateClick = () => {
         setIsLoading(true);
-
-        if (typeof window !== "undefined") {
-            if (window.innerWidth > 900) {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-            } else {
-                if (botrightRef.current && botrightRef.current.scrollIntoView) {
-                    try {
-                        botrightRef.current.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center",
-                        });
-                    } catch (e) {
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                } else {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                }
-            }
-        }
+        setErrorMessage("");
+        setCalculationResult(null);
 
         setTimeout(() => {
             try {
@@ -205,6 +189,15 @@ const App = () => {
             }
         }, 60);
     };
+
+    React.useEffect(() => {
+        if (isLoading && botrightRef.current) {
+            botrightRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        }
+    }, [isLoading]);
 
     // Helpers for result display
     const formatResult = (result) => {
@@ -327,7 +320,12 @@ const App = () => {
                         </p>
                         <div className="badges">
                             <span className="badge java">
-                                Java Edition Only!
+                                Java Edition Only
+                            </span>
+                            <span className="badge coffee">
+                                <a href="https://buymeacoffee.com/codewithbottle">
+                                    Support Me!
+                                </a>
                             </span>
                         </div>
                         <a href="/guide" className="guidebtn">
@@ -1056,9 +1054,7 @@ const App = () => {
 
                     <div className="botright" ref={botrightRef}>
                         {isLoading ? (
-                            <div className="results-loading">
-                                Results Loading
-                            </div>
+                            <div className="results-loading"></div>
                         ) : calculationResult ? (
                             <div className="calculation-result">
                                 {!calculationResult.success ? (
@@ -1270,43 +1266,8 @@ const App = () => {
                         )}
                     </div>
                 </main>
+                <Footer />
             </div>
-
-            <footer className="appfooter" role="contentinfo">
-                <div className="footertext">
-                    <p className="footertop">
-                        Inspired By{" "}
-                        <a
-                            href="https://iamcal.github.io/enchant-order/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Cal Henderson's Tool
-                        </a>
-                    </p>
-                    <p className="footermid">
-                        Font By{" "}
-                        <a
-                            href="https://www.fontspace.com/jdgraphics"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            JDGraphics
-                        </a>
-                    </p>
-                    <p className="footerbot">
-                        More such tools are planned. If this tool helped you,
-                        consider supporting me and my projects on{" "}
-                        <a
-                            href="https://buymeacoffee.com/codewithbottle"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Buy Me a Coffee.
-                        </a>
-                    </p>
-                </div>
-            </footer>
         </div>
     );
 };
