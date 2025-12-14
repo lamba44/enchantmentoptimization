@@ -51,6 +51,19 @@ export const itemEnchantMap = {
         { name: "Curse of Binding", max: 1 },
         { name: "Curse of Vanishing", max: 1 },
     ],
+    "Turtle Shell": [
+        { name: "Protection", max: 4 },
+        { name: "Fire Protection", max: 4 },
+        { name: "Projectile Protection", max: 4 },
+        { name: "Blast Protection", max: 4 },
+        { name: "Thorns", max: 3 },
+        { name: "Respiration", max: 3 },
+        { name: "Aqua Affinity", max: 1 },
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Binding", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
     // Weapons
     Sword: [
         { name: "Sharpness", max: 5 },
@@ -177,6 +190,25 @@ export const itemEnchantMap = {
     "Flint and Steel": [
         { name: "Unbreaking", max: 3 },
         { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Brush: [
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    "Carrot on a Stick": [
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    "Warped Fungus on a Stick": [
+        { name: "Unbreaking", max: 3 },
+        { name: "Mending", max: 1 },
+        { name: "Curse of Vanishing", max: 1 },
+    ],
+    Pumpkin: [
+        { name: "Curse of Binding", max: 1 },
         { name: "Curse of Vanishing", max: 1 },
     ],
 };

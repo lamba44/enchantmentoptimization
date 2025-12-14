@@ -18,8 +18,9 @@ const Guide = () => {
             <header className="topsect" role="banner">
                 <div className="introbox">
                     <p className="intro-desc">
-                        Anvils are powerful but often confusing. If you've seen
-                        the <span className="dangerword">Too Expensive!</span>{" "}
+                        Anvils in Minecraft are powerful but often confusing. If
+                        you've seen the{" "}
+                        <span className="dangerword">Too Expensive!</span>{" "}
                         message, this guide explains the core anvil functions
                         and how to use them safely.
                     </p>

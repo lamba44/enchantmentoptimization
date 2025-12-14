@@ -306,7 +306,7 @@ const App = () => {
                 <header className="topsect" role="banner">
                     <div className="introbox">
                         <p className="intro-desc">
-                            Plan the most efficient anvil combinations to
+                            Get the most efficient anvil combinations to
                             <span className="highlight">
                                 {" "}
                                 minimize XP cost{" "}
@@ -316,7 +316,7 @@ const App = () => {
                                 {" "}
                                 "Too Expensive!"
                             </span>{" "}
-                            message.
+                            message in Minecraft.
                         </p>
                         <div className="badges">
                             <span className="badge java">
@@ -342,6 +342,7 @@ const App = () => {
                                     "Chestplate",
                                     "Leggings",
                                     "Boots",
+                                    "Turtle Shell",
                                 ],
                                 Weapons: [
                                     "Sword",
@@ -363,6 +364,10 @@ const App = () => {
                                     "Elytra",
                                     "Shears",
                                     "Flint and Steel",
+                                    "Brush",
+                                    "Carrot on a Stick",
+                                    "Warped Fungus on a Stick",
+                                    "Pumpkin",
                                 ],
                             };
                             return (

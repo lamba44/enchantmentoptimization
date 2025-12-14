@@ -81,6 +81,10 @@ figcaption {
     margin: 8px 0;
 }
 
+.code strong {
+    background: transparent;
+}
+
 .examples {
     margin: 8px 0 12px 18px;
     font-size: 15px;
