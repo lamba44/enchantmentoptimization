@@ -316,7 +316,8 @@ const App = () => {
                                 {" "}
                                 "Too Expensive!"
                             </span>{" "}
-                            message in Minecraft.
+                            message in Minecraft. Support for Bedrock coming
+                            soon!
                         </p>
                         <div className="badges">
                             <span className="badge java">

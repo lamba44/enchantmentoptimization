@@ -22,7 +22,11 @@ const Guide = () => {
                         you've seen the{" "}
                         <span className="dangerword">Too Expensive!</span>{" "}
                         message, this guide explains the core anvil functions
-                        and how to use them safely.
+                        and how to use them safely. This is a practical,
+                        Java-Edition focused{" "}
+                        <strong>Minecraft anvil guide</strong> for players who
+                        want to optimize enchanting, reduce XP costs, and avoid
+                        hitting the anvil limit while playing Survival.
                     </p>
                     <div className="badges">
                         <span className="badge java">Java Edition Only!</span>
@@ -45,7 +49,10 @@ const Guide = () => {
                     Anvils repair, combine, and rename items while keeping
                     enchantments. Most operations cost experience levels and
                     sometimes materials. Falling anvils deal damage but do not
-                    cost XP.
+                    cost XP. This page covers anvil mechanics, the XP cost
+                    formula, prior work penalty, common causes of the{" "}
+                    <strong>Too Expensive</strong> error, and practical
+                    strategies to optimize enchanting in Survival worlds.
                 </p>
 
                 <div className="core-list">
@@ -53,7 +60,10 @@ const Guide = () => {
                         <strong>Rename</strong>
                         <p>
                             Give any item a custom name. Renaming can be done
-                            during a repair or combine if XP allows.
+                            during a repair or combine if XP allows. Renaming
+                            adds a small fixed cost (usually +1 level) and can
+                            push a multi-step operation past the 40 level
+                            threshold — rename only when necessary to save XP.
                         </p>
                         <figure>
                             <img src={Renaming} alt="Renaming item in anvil" />
@@ -68,6 +78,9 @@ const Guide = () => {
                         <p>
                             Restore durability using base materials or another
                             item of the same type without removing enchantments.
+                            Repairing consumes materials (iron, diamonds, etc.)
+                            and XP; repairing repeatedly increases the item’s
+                            prior-work value which raises future anvil costs.
                         </p>
                         <figure>
                             <img src={Repairing} alt="Repairing item" />
@@ -82,7 +95,10 @@ const Guide = () => {
                         <p>
                             Merge similar items or apply enchanted books. Books
                             are usually cheaper to apply than combining two
-                            enchanted items.
+                            enchanted items because they avoid transferring a
+                            target item's high prior work. Smart book combining
+                            (stacking books into one) is an essential
+                            <em> XP-efficient enchanting strategy</em>.
                         </p>
                         <figure>
                             <img
@@ -100,7 +116,9 @@ const Guide = () => {
                         <p>
                             Falling anvils damage mobs/players (+2 HP per block
                             fallen after first, max 40 HP). They also degrade on
-                            impact and can destroy ground items.
+                            impact and can destroy ground items. Anvil
+                            durability is a separate consideration from XP cost
+                            but important for long-term anvil planning.
                         </p>
                     </div>
                 </div>
@@ -120,7 +138,9 @@ const Guide = () => {
                         Each time an item is repaired, combined, or enchanted on
                         an anvil, it gains a hidden history value that increases
                         future XP costs. This is the
-                        <strong> Prior Work Penalty</strong>.
+                        <strong> Prior Work Penalty</strong>. Understanding this
+                        exponential growth is key to planning XP-efficient
+                        enchant sequences.
                     </p>
 
                     <p className="code">
@@ -138,13 +158,15 @@ const Guide = () => {
                     <p>
                         Small penalties are fine, but the penalty grows quickly
                         and is often the main reason an anvil operation becomes
-                        expensive.
+                        expensive. Because prior work is exponential, game
+                        strategies focus on minimizing the number of times a
+                        valuable item is touched on an anvil.
                     </p>
 
                     <figure className="inline-img">
                         <img src={PWPCost} alt="Prior Work Penalty example" />
                         <figcaption>
-                            Tooltip or anvil screen showing prior work impact
+                            Anvil screen showing prior work impact
                         </figcaption>
                     </figure>
                 </div>
@@ -154,7 +176,9 @@ const Guide = () => {
                     <p>
                         In Survival, a single anvil operation is blocked if it
                         would cost <strong>40 levels or more</strong>. The anvil
-                        sums several parts to make this total.
+                        sums several parts to make this total. Many players hit
+                        this limit unexpectedly when combining many high-level
+                        enchanted books or repeatedly repairing a single item.
                     </p>
 
                     <p className="step">What adds to the cost:</p>
@@ -174,9 +198,29 @@ const Guide = () => {
                     </p>
 
                     <p>
-                        To avoid this: Combine books first, Apply the combined
-                        book once, and keep the item's own use count low.
+                        To avoid this: Combine books first, apply the combined
+                        book once, and keep the item's own use count low. If you
+                        have many enchanted books, merge them into a single
+                        consolidated book in advance — this reduces total anvil
+                        operations and the chance of hitting the 40 level cap.
                     </p>
+
+                    <p>Practical tips for Players:</p>
+                    <ul className="examples">
+                        <li>
+                            Stack books of the same enchantment level before
+                            applying to the target item to reduce repeated uses.
+                        </li>
+                        <li>
+                            Apply mutually compatible enchantments together to
+                            minimize intermediate merges that increase prior
+                            work.
+                        </li>
+                        <li>
+                            Keep a 'clean' copy of a valuable item (no prior
+                            work) and only apply final combined books once.
+                        </li>
+                    </ul>
 
                     <figure className="inline-img">
                         <img src={TooExpensive} alt="Too Expensive example" />
@@ -195,7 +239,9 @@ const Guide = () => {
                         books/items to your target. It models Minecraft's anvil
                         rules (prior work penalties, enchantment multipliers,
                         and conflicts) and prunes useless steps so it runs
-                        quickly.
+                        quickly. Use this <strong>anvil cost calculator</strong>{" "}
+                        to plan XP-efficient enchanting sequences before you
+                        touch the in-game anvil.
                     </p>
 
                     <p className="mini-steps">Key Points:</p>
@@ -233,9 +279,12 @@ const Guide = () => {
                     </ul>
 
                     <p>
-                        In short: The tool simulates valid anvil merges, avoids
+                        In short, the tool simulates valid anvil merges, avoids
                         pointless work, and returns the optimal safe sequence so
                         you can apply enchants without hitting “Too Expensive!”.
+                        This makes it a useful{" "}
+                        <em>Minecraft enchantment optimizer</em> and planning
+                        aid for both singleplayer and multiplayer servers.
                     </p>
 
                     <figure className="inline-img">
