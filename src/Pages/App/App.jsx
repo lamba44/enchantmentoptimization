@@ -49,7 +49,7 @@ const App = () => {
     React.useEffect(() => {
         try {
             workerRef.current = new Worker(
-                new URL("../../../workers/enchantWorker.js", import.meta.url),
+                new URL("./enchantWorker.js", import.meta.url),
                 { type: "module" }
             );
 

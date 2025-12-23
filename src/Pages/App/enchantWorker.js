@@ -1,7 +1,5 @@
-// src/workers/enchantWorker.js
-// Module worker for Vite (type: "module")
-import { computeOptimalEnchantPlan as computeJava } from "../data/enchantCalculator.js";
-import { computeOptimalEnchantPlan as computeBedrock } from "../data/bedrockCalculator.js";
+import { computeOptimalEnchantPlan as computeJava } from "../../data/enchantCalculator.js";
+import { computeOptimalEnchantPlan as computeBedrock } from "../../data/bedrockCalculator.js";
 
 self.onmessage = async (ev) => {
     const { id, data } = ev.data || {};
