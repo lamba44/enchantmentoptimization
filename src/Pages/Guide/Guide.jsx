@@ -22,23 +22,28 @@ const Guide = () => {
                         you've seen the{" "}
                         <span className="dangerword">Too Expensive!</span>{" "}
                         message, this guide explains the core anvil functions
-                        and how to use them safely. This is a practical,
-                        Java-Edition focused{" "}
-                        <strong>Minecraft anvil guide</strong> for players who
-                        want to optimize enchanting, reduce XP costs, and avoid
-                        hitting the anvil limit while playing Survival.
+                        and how to use them safely. This is a practical tool for
+                        Minecraft players who want to optimize enchanting,
+                        reduce XP costs, and/or avoid hitting the anvil limit
+                        while playing Survival.
                     </p>
-                    <div className="badges">
-                        <span className="badge java">Java Edition Only!</span>
-                        <span className="badge coffee">
-                            <a href="https://buymeacoffee.com/codewithbottle">
-                                Support Me!
-                            </a>
-                        </span>
+                    <div className="headerbtns">
+                        <a
+                            href="/"
+                            rel="noopener noreferrer"
+                            className="headerbtn"
+                        >
+                            Go To Tool
+                        </a>
+                        <a
+                            href="https://buymeacoffee.com/codewithbottle"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="headerbtn supportbtn"
+                        >
+                            Support Me!
+                        </a>
                     </div>
-                    <a href="/" className="guidebtn">
-                        Go to Tool
-                    </a>
                 </div>
             </header>
 

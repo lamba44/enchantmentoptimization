@@ -1,7 +1,10 @@
+// src/Pages/App/App.jsx
 import React from "react";
 import "./App.css";
 import { itemEnchantMap, conflictMap } from "./../../data/enchantmentData";
-import { computeOptimalEnchantPlan } from "./../../data/enchantCalculator";
+// IMPORT BOTH CALCULATORS
+import { computeOptimalEnchantPlan as computeJava } from "./../../data/enchantCalculator";
+import { computeOptimalEnchantPlan as computeBedrock } from "./../../data/bedrockCalculator";
 import Footer from "../../Components/Footer/Footer";
 
 const App = () => {
@@ -21,6 +24,9 @@ const App = () => {
     const [calculationResult, setCalculationResult] = React.useState(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const botrightRef = React.useRef(null);
+
+    // NEW: edition state (default Java)
+    const [edition, setEdition] = React.useState("Java"); // "Java" | "Bedrock"
 
     // Get current enchantments based on selected item
     const currentEnchants = selectedSub
@@ -59,6 +65,16 @@ const App = () => {
             setCalculationResult(null);
         }
     }, [selectedSub]);
+
+    // Handle edition toggle and clear results/errors when changed
+    const handleEditionChange = (ed) => {
+        if (edition === ed) return;
+        setEdition(ed);
+        // Clear results and errors just like switching item/category
+        setErrorMessage("");
+        setCalculationResult(null);
+        setIsLoading(false);
+    };
 
     // Unified toggle that only affects the provided set (no cross-set effects)
     const handleToggle = (ename, setEnchants, enchants) => {
@@ -164,10 +180,16 @@ const App = () => {
                     : sacMode === "Item & Books"
                     ? sacBooksEnchants
                     : {},
+            // edition remains available in data but calculators ignore or use as needed
+            edition,
         };
 
         try {
-            const result = computeOptimalEnchantPlan(calculationData);
+            // CALL THE CORRECT CALCULATOR BASED ON SELECTED EDITION
+            const result =
+                edition === "Java"
+                    ? computeJava(calculationData)
+                    : computeBedrock(calculationData);
             setCalculationResult(result);
         } catch (error) {
             setErrorMessage(`Calculation error: ${error.message}`);
@@ -316,22 +338,34 @@ const App = () => {
                                 {" "}
                                 "Too Expensive!"
                             </span>{" "}
-                            message in Minecraft. Support for Bedrock coming
-                            soon!
+                            message in Minecraft. Now supports both Minecraft
+                            <span className="highlight">
+                                {" "}
+                                Java Edition
+                            </span> and{" "}
+                            <span className="highlight">
+                                Bedrock Edition
+                            </span>{" "}
+                            anvil mechanics!
                         </p>
-                        <div className="badges">
-                            <span className="badge java">
-                                Java Edition Only
-                            </span>
-                            <span className="badge coffee">
-                                <a href="https://buymeacoffee.com/codewithbottle">
-                                    Support Me!
-                                </a>
-                            </span>
+                        <div className="headerbtns">
+                            <a
+                                href="/guide"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="headerbtn"
+                            >
+                                Guide
+                            </a>
+                            <a
+                                href="https://buymeacoffee.com/codewithbottle"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="headerbtn supportbtn"
+                            >
+                                Support Me!
+                            </a>
                         </div>
-                        <a href="/guide" className="guidebtn">
-                            Guide
-                        </a>
                     </div>
                 </header>
                 <main className="bottomsect" role="main">
@@ -371,8 +405,37 @@ const App = () => {
                                     "Pumpkin",
                                 ],
                             };
+
                             return (
                                 <>
+                                    <div className="edition-toggle">
+                                        <div className="cat-help">Edition:</div>
+                                        <button
+                                            className={`edition-btn ${
+                                                edition === "Java"
+                                                    ? "active"
+                                                    : ""
+                                            }`}
+                                            onClick={() =>
+                                                handleEditionChange("Java")
+                                            }
+                                        >
+                                            Java
+                                        </button>
+                                        <button
+                                            className={`edition-btn ${
+                                                edition === "Bedrock"
+                                                    ? "active"
+                                                    : ""
+                                            }`}
+                                            onClick={() =>
+                                                handleEditionChange("Bedrock")
+                                            }
+                                        >
+                                            Bedrock
+                                        </button>
+                                    </div>
+
                                     <p className="cat-help">Select Item:</p>
                                     <div className="cat-select">
                                         {Object.keys(subcats).map((cat) => (

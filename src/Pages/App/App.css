@@ -42,32 +42,17 @@
     font-weight: bold;
     background-color: transparent;
 }
-.badges {
+
+.headerbtns {
+    margin: 0 auto;
+    background-color: transparent;
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
-    background-color: transparent;
+    align-items: center;
+    gap: 32px;
 }
-.badge {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: bold;
-    text-shadow: 1px 1px 0px #000;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-}
-.badge.java {
-    background-color: #1d5c99;
-}
-.badge.coffee {
-    background-color: #806b00;
-}
-.badge a {
-    text-decoration: none;
-    background-color: transparent;
-}
-.guidebtn {
+
+.headerbtn {
     display: inline-block;
     margin: 0 auto;
     margin-top: 12px;
@@ -81,10 +66,20 @@
     text-shadow: 1px 1px 0px #000;
     transition: transform 0.15s ease, background-color 0.15s ease;
 }
-.guidebtn:hover {
+.headerbtn:hover {
     background-color: #66cc66;
     transform: translateY(-2px);
 }
+
+.supportbtn {
+    background-color: #c9a227;
+    border: 2px solid #a47e1b;
+}
+
+.supportbtn:hover {
+    background-color: #edc531;
+}
+
 .bottomsect {
     flex: 2;
     display: flex;
@@ -112,7 +107,13 @@
     justify-content: flex-start;
     align-items: flex-start;
 }
-.cat-btn {
+
+.edition-toggle {
+    margin-bottom: 16px;
+}
+
+.cat-btn,
+.edition-btn {
     padding: 6px 16px;
     background-color: #222;
     border: 1px solid #555;
@@ -120,6 +121,14 @@
     cursor: pointer;
     border-radius: 6px;
     flex: 0 0 auto;
+}
+
+.edition-btn {
+    margin-right: 12px;
+}
+
+.edition-btn.active {
+    background-color: #00aaaa;
 }
 .cat-btn.active {
     background-color: #55aa55;
@@ -649,8 +658,15 @@
     }
 }
 
+@media (max-width: 472px) {
+    .headerbtns {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
 @media (max-width: 425px) {
-    .guidebtn {
+    .headerbtn {
         font-size: 14px;
         display: inline-block;
         margin: 0 auto;
