@@ -1,4 +1,3 @@
-// src/Pages/App/App.jsx
 import React from "react";
 import "./App.css";
 import { itemEnchantMap, conflictMap } from "./../../data/enchantmentData";
