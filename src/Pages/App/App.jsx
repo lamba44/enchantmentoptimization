@@ -2,7 +2,7 @@
 import React from "react";
 import "./App.css";
 import { itemEnchantMap, conflictMap } from "./../../data/enchantmentData";
-// IMPORT BOTH CALCULATORS
+// IMPORT BOTH CALCULATORS (kept for fallback)
 import { computeOptimalEnchantPlan as computeJava } from "./../../data/enchantCalculator";
 import { computeOptimalEnchantPlan as computeBedrock } from "./../../data/bedrockCalculator";
 import Footer from "../../Components/Footer/Footer";
@@ -27,6 +27,102 @@ const App = () => {
 
     // NEW: edition state (default Java)
     const [edition, setEdition] = React.useState("Java"); // "Java" | "Bedrock"
+
+    // Worker references (for background calculation)
+    const workerRef = React.useRef(null);
+    const pendingRef = React.useRef(new Map()); // id => {resolve, reject}
+
+    const [loadingFact, setLoadingFact] = React.useState("");
+    const MINECRAFT_FACTS = [
+        "Anvils can break after repeated use.",
+        "Combining enchanted books is often cheaper than combining items directly.",
+        "In Java Edition, anvil costs depend on final enchantment levels.",
+        "In Bedrock Edition, anvil costs depend on level increases, not final levels.",
+        "The 'Too Expensive!' limit appears at 40 levels in Java Edition.",
+        "Prior Work Penalty increases exponentially with each anvil use.",
+        "Mending and Infinity cannot be used together on the same item.",
+        "Books count as lighter sacrifices than items in an anvil.",
+        "The order of combining enchantments can drastically change the XP cost.",
+        "Anvils were added to Minecraft in version 1.4.2.",
+    ];
+
+    // Create worker on mount (Vite module-worker style). Keep no timeouts/limits.
+    React.useEffect(() => {
+        try {
+            workerRef.current = new Worker(
+                new URL("../../workers/enchantWorker.js", import.meta.url),
+                { type: "module" }
+            );
+
+            workerRef.current.onmessage = (ev) => {
+                const { id, success, result, error } = ev.data || {};
+                if (!id) return;
+                const rec = pendingRef.current.get(id);
+                if (!rec) return;
+                if (success) rec.resolve(result);
+                else rec.reject(new Error(error || "Worker error"));
+                pendingRef.current.delete(id);
+            };
+
+            workerRef.current.onerror = (err) => {
+                // Reject all pending on error
+                pendingRef.current.forEach(({ reject }) => {
+                    try {
+                        reject(
+                            new Error(
+                                "Worker error: " + (err?.message || String(err))
+                            )
+                        );
+                    } catch {}
+                });
+                pendingRef.current.clear();
+            };
+        } catch (e) {
+            // Worker couldn't be created — fallback will run on main thread
+            console.warn(
+                "Could not create worker; falling back to main-thread compute.",
+                e
+            );
+            workerRef.current = null;
+        }
+
+        return () => {
+            if (workerRef.current) workerRef.current.terminate();
+            pendingRef.current.forEach(({ reject }) => {
+                try {
+                    reject(new Error("Worker terminated"));
+                } catch {}
+            });
+            pendingRef.current.clear();
+        };
+    }, []);
+
+    // Helper to call worker (no timeouts or cancellation) — falls back to sync compute if no worker.
+    const callWorker = (data) => {
+        if (!workerRef.current) {
+            return new Promise((resolve, reject) => {
+                try {
+                    const res =
+                        data?.edition === "Bedrock"
+                            ? computeBedrock(data)
+                            : computeJava(data);
+                    resolve(res);
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+        return new Promise((resolve, reject) => {
+            const id = Math.random().toString(36).slice(2);
+            pendingRef.current.set(id, { resolve, reject });
+            try {
+                workerRef.current.postMessage({ id, data });
+            } catch (err) {
+                pendingRef.current.delete(id);
+                reject(err);
+            }
+        });
+    };
 
     // Get current enchantments based on selected item
     const currentEnchants = selectedSub
@@ -115,8 +211,8 @@ const App = () => {
         });
     };
 
-    // Validate input and run calculation
-    const validateAndCalculate = () => {
+    // Validate input and run calculation (now async and uses worker)
+    const validateAndCalculate = async () => {
         setErrorMessage("");
         setCalculationResult(null);
 
@@ -180,16 +276,13 @@ const App = () => {
                     : sacMode === "Item & Books"
                     ? sacBooksEnchants
                     : {},
-            // edition remains available in data but calculators ignore or use as needed
+            // edition remains available in data and is used by worker/fallback
             edition,
         };
 
         try {
-            // CALL THE CORRECT CALCULATOR BASED ON SELECTED EDITION
-            const result =
-                edition === "Java"
-                    ? computeJava(calculationData)
-                    : computeBedrock(calculationData);
+            // send to worker (or fallback) and await full result (no limits)
+            const result = await callWorker(calculationData);
             setCalculationResult(result);
         } catch (error) {
             setErrorMessage(`Calculation error: ${error.message}`);
@@ -198,18 +291,20 @@ const App = () => {
     };
 
     // Calculate click wrapper for small UX niceties
-    const handleCalculateClick = () => {
+    const handleCalculateClick = async () => {
+        const randomFact =
+            MINECRAFT_FACTS[Math.floor(Math.random() * MINECRAFT_FACTS.length)];
+        setLoadingFact(randomFact);
+
         setIsLoading(true);
         setErrorMessage("");
         setCalculationResult(null);
 
-        setTimeout(() => {
-            try {
-                validateAndCalculate();
-            } finally {
-                setIsLoading(false);
-            }
-        }, 60);
+        try {
+            await validateAndCalculate();
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     React.useEffect(() => {
@@ -408,6 +503,7 @@ const App = () => {
 
                             return (
                                 <>
+                                    {/* Edition toggle */}
                                     <div className="edition-toggle">
                                         <div className="cat-help">Edition:</div>
                                         <button
@@ -1123,7 +1219,17 @@ const App = () => {
 
                     <div className="botright" ref={botrightRef}>
                         {isLoading ? (
-                            <div className="results-loading"></div>
+                            <div className="results-loading-wrapper">
+                                <div className="results-loading"></div>
+                                <div className="loading-text">
+                                    Calculating your results… <br />
+                                    <span className="loading-fact">
+                                        Extremely complex calculations can take
+                                        a minute or two. Did you know?{" "}
+                                        {loadingFact}
+                                    </span>
+                                </div>
+                            </div>
                         ) : calculationResult ? (
                             <div className="calculation-result">
                                 {!calculationResult.success ? (

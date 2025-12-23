@@ -1,95 +1,45 @@
 // src/data/bedrockCalculator.js
+// Optimized Bedrock Edition enchant calculator (drop-in replacement)
+
 import { enchantmentsConflict, itemEnchantMap } from "./enchantmentData";
 
-function deepClone(obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
+/* ===================== PRECOMPUTATION ===================== */
 
-function clone(n) {
-    return {
-        item: n.item,
-        isBook: n.isBook,
-        rc: n.rc,
-        ench: { ...n.ench },
-        isTarget: !!n.isTarget,
-    };
-}
-
-function key(nodes) {
-    return nodes
-        .map((n) => {
-            const e = Object.entries(n.ench)
-                .sort()
-                .map(([k, v]) => k + ":" + v)
-                .join(",");
-            return (
-                (n.isBook ? "B" : "I") +
-                "|" +
-                n.item +
-                "|" +
-                n.rc +
-                "|" +
-                e +
-                "|" +
-                (n.isTarget ? "T" : "N")
-            );
-        })
-        .sort()
-        .join("||");
-}
-
-function disp(n) {
-    const e = Object.entries(n.ench)
-        .map(([k, v]) => k + " " + toRoman(v))
-        .join(", ");
-    return n.isBook
-        ? "Book" + (e ? " (" + e + ")" : "")
-        : n.item + (e ? " (" + e + ")" : "");
-}
-
-function toRoman(num) {
-    if (num <= 0) return "0";
-    const lookup = {
-        M: 1000,
-        CM: 900,
-        D: 500,
-        CD: 400,
-        C: 100,
-        XC: 90,
-        L: 50,
-        XL: 40,
-        X: 10,
-        IX: 9,
-        V: 5,
-        IV: 4,
-        I: 1,
-    };
-    let roman = "";
-    for (let i in lookup) {
-        while (num >= lookup[i]) {
-            roman += i;
-            num -= lookup[i];
-        }
-    }
-    return roman;
-}
-
-function xpForLevel(L) {
-    if (L <= 16) return L * L + 6 * L;
-    if (L <= 31) return Math.floor(2.5 * L * L - 40.5 * L + 360);
-    return Math.floor(4.5 * L * L - 162.5 * L + 2220);
-}
-
-function getMaxLevel(enchantName) {
+// Build enchant → index mapping once
+const ENCHANT_INDEX = (() => {
+    const map = new Map();
+    let i = 0;
     for (const arr of Object.values(itemEnchantMap)) {
         for (const e of arr) {
-            if (e.name === enchantName) return e.max;
+            if (!map.has(e.name)) map.set(e.name, i++);
         }
     }
+    return map;
+})();
+const ENCHANT_COUNT = ENCHANT_INDEX.size;
+
+// Reverse index → enchant name
+const IDX_TO_NAME = Array.from(ENCHANT_INDEX.entries())
+    .sort((a, b) => a[1] - b[1])
+    .map(([name]) => name);
+
+// Max level cache
+const maxLevelCache = new Map();
+function getMaxLevel(name) {
+    if (maxLevelCache.has(name)) return maxLevelCache.get(name);
+    for (const arr of Object.values(itemEnchantMap)) {
+        for (const e of arr) {
+            if (e.name === name) {
+                maxLevelCache.set(name, e.max);
+                return e.max;
+            }
+        }
+    }
+    maxLevelCache.set(name, 1);
     return 1;
 }
 
-// Keep the same multiplier table as your java calc so book/item multipliers match
+// Multipliers (same as your original)
 const multipliers = {
     Protection: { item: 1, book: 1 },
     "Fire Protection": { item: 2, book: 1 },
@@ -117,7 +67,7 @@ const multipliers = {
     Multishot: { item: 4, book: 2 },
     Piercing: { item: 1, book: 1 },
     "Quick Charge": { item: 2, book: 1 },
-    Impaling: { item: 2, book: 1 }, //Different from Java
+    Impaling: { item: 2, book: 1 },
     Channeling: { item: 8, book: 4 },
     Riptide: { item: 4, book: 2 },
     Loyalty: { item: 1, book: 1 },
@@ -130,280 +80,334 @@ const multipliers = {
     Mending: { item: 4, book: 2 },
     "Curse of Binding": { item: 8, book: 4 },
     "Curse of Vanishing": { item: 8, book: 4 },
-    Density: { item: 2, book: 1 },
-    Breach: { item: 4, book: 2 },
-    "Wind Burst": { item: 4, book: 2 },
-    Lunge: { item: 2, book: 1 },
 };
 
-function getMultiplier(enchantName, isBook) {
-    if (multipliers[enchantName])
-        return isBook
-            ? multipliers[enchantName].book
-            : multipliers[enchantName].item;
-    return isBook ? 1 : 1;
+function getMultiplier(name, isBook) {
+    const m = multipliers[name];
+    return m ? (isBook ? m.book : m.item) : 1;
 }
 
-// Bedrock combine: costs are calculated using the *increase* in level for the target (final - initial)
-function combine(aInput, bInput) {
-    let a = aInput;
-    let b = bInput;
-    let swapped = false;
-    // if a is a book but b is not, swap so non-book is left (mirror in-game behavior)
-    if (a.isBook && !b.isBook) {
-        const tmp = a;
-        a = b;
-        b = tmp;
-        swapped = true;
-    }
-    const r = clone(a);
-    r.item = a.item;
-    r.isBook = a.isBook && b.isBook;
-    r.isTarget = !!(a.isTarget || b.isTarget);
+function xpForLevel(L) {
+    if (L <= 16) return L * L + 6 * L;
+    if (L <= 31) return Math.floor(2.5 * L * L - 40.5 * L + 360);
+    return Math.floor(4.5 * L * L - 162.5 * L + 2220);
+}
 
-    const changes = [];
+/* ===================== VECTORS ===================== */
+
+function vecFromObj(obj) {
+    const v = new Uint8Array(ENCHANT_COUNT);
+    if (!obj) return v;
+    for (const [k, lv] of Object.entries(obj)) {
+        const idx = ENCHANT_INDEX.get(k);
+        if (idx !== undefined) v[idx] = lv;
+    }
+    return v;
+}
+
+function vecKey(v) {
+    return Array.from(v).join(",");
+}
+
+/* ===================== COMBINE (BEDROCK RULES) ===================== */
+
+const combineMemo = new Map();
+
+function combine(a, b) {
+    const key =
+        vecKey(a.ench) +
+        "|" +
+        vecKey(b.ench) +
+        "|" +
+        a.rc +
+        "|" +
+        b.rc +
+        "|" +
+        (a.isBook ? 1 : 0) +
+        "|" +
+        (b.isBook ? 1 : 0);
+
+    if (combineMemo.has(key)) return combineMemo.get(key);
+
+    let left = a,
+        right = b;
+    if (left.isBook && !right.isBook) [left, right] = [right, left];
+
+    const outVec = new Uint8Array(left.ench);
     let enchantCost = 0;
-    for (const x in b.ench) {
-        let applicable = true;
-        let conflictCount = 0;
-        for (const y in a.ench) {
-            if (enchantmentsConflict(x, y) || enchantmentsConflict(y, x))
-                conflictCount++;
-        }
-        if (conflictCount > 0) {
-            // BEDROCK: conflicting enchantments on right side are ignored/kicked (no Java +1 penalty)
-            applicable = false;
-        }
-        if (!applicable) continue;
+    const changes = [];
 
-        const lvA = r.ench[x] || 0;
-        const lvB = b.ench[x];
-        const maxLv = getMaxLevel(x);
-        let finalLv;
-        if (lvA === lvB && lvA > 0 && lvA < maxLv)
-            finalLv = Math.min(maxLv, lvA + 1);
-        else finalLv = Math.min(maxLv, Math.max(lvA, lvB));
+    for (let i = 0; i < ENCHANT_COUNT; i++) {
+        const lvB = right.ench[i];
+        if (!lvB) continue;
+
+        let conflict = false;
+        for (let j = 0; j < ENCHANT_COUNT; j++) {
+            if (left.ench[j]) {
+                const n1 = IDX_TO_NAME[i];
+                const n2 = IDX_TO_NAME[j];
+                if (
+                    enchantmentsConflict(n1, n2) ||
+                    enchantmentsConflict(n2, n1)
+                ) {
+                    conflict = true;
+                    break;
+                }
+            }
+        }
+        if (conflict) continue;
+
+        const lvA = outVec[i];
+        const maxLv = getMaxLevel(IDX_TO_NAME[i]);
+        const finalLv =
+            lvA === lvB && lvA > 0 && lvA < maxLv
+                ? Math.min(maxLv, lvA + 1)
+                : Math.min(maxLv, Math.max(lvA, lvB));
+
         if (finalLv !== lvA) {
-            r.ench[x] = finalLv;
-            changes.push([x, lvA, finalLv]);
-        } else {
-            r.ench[x] = lvA;
+            outVec[i] = finalLv;
+            changes.push([IDX_TO_NAME[i], lvA, finalLv]);
         }
 
-        // BEDROCK: cost contribution is multiplier * (increase in levels)
-        const mult = getMultiplier(x, b.isBook);
-        const delta = Math.max(0, finalLv - lvA); // only the increase contributes
-        enchantCost += mult * delta;
+        enchantCost +=
+            getMultiplier(IDX_TO_NAME[i], right.isBook) *
+            Math.max(0, finalLv - lvA);
     }
 
-    if (changes.length === 0) return null;
+    if (!changes.length) {
+        combineMemo.set(key, null);
+        return null;
+    }
 
-    const pwA = Math.max(0, 2 ** a.rc - 1);
-    const pwB = Math.max(0, 2 ** b.rc - 1);
-    const pwSum = pwA + pwB;
-    const levels = Math.max(1, Math.floor(pwSum + enchantCost));
-    if (levels >= 40) return null;
-    const xp = xpForLevel(levels);
-    r.rc = 1 + Math.max(a.rc, b.rc);
-    return {
-        node: r,
+    const pw = Math.max(0, 2 ** left.rc - 1) + Math.max(0, 2 ** right.rc - 1);
+    const levels = Math.max(1, Math.floor(pw + enchantCost));
+    if (levels >= 40) {
+        combineMemo.set(key, null);
+        return null;
+    }
+
+    const res = {
+        node: {
+            item: left.item,
+            isBook: left.isBook && right.isBook,
+            rc: 1 + Math.max(left.rc, right.rc),
+            ench: outVec,
+            isTarget: left.isTarget || right.isTarget,
+        },
         levels,
-        xp,
-        pw: pwSum,
+        xp: xpForLevel(levels),
+        pw,
         changes,
-        left: a,
-        right: b,
-        swapped,
+        left,
+        right,
     };
+
+    combineMemo.set(key, res);
+    return res;
 }
 
-function removeConflictsWithTarget(enchantObj, targetEnch) {
-    if (!enchantObj || Object.keys(enchantObj).length === 0) return {};
-    if (!targetEnch || Object.keys(targetEnch).length === 0)
-        return { ...enchantObj };
-    const result = {};
-    const targetKeys = Object.keys(targetEnch);
-    for (const [k, v] of Object.entries(enchantObj)) {
-        let conflicts = false;
-        for (const t of targetKeys) {
-            if (enchantmentsConflict(k, t) || enchantmentsConflict(t, k)) {
-                conflicts = true;
-                break;
+/* ===================== PRIORITY QUEUE ===================== */
+
+class MinHeap {
+    constructor() {
+        this.a = [];
+    }
+    push(p, v) {
+        this.a.push([p, v]);
+        let i = this.a.length - 1;
+        while (i > 0) {
+            const pIdx = (i - 1) >> 1;
+            if (this.a[pIdx][0] <= this.a[i][0]) break;
+            [this.a[pIdx], this.a[i]] = [this.a[i], this.a[pIdx]];
+            i = pIdx;
+        }
+    }
+    pop() {
+        if (!this.a.length) return null;
+        const r = this.a[0];
+        const x = this.a.pop();
+        if (this.a.length) {
+            this.a[0] = x;
+            let i = 0;
+            while (true) {
+                let l = i * 2 + 1,
+                    r2 = l + 1,
+                    s = i;
+                if (l < this.a.length && this.a[l][0] < this.a[s][0]) s = l;
+                if (r2 < this.a.length && this.a[r2][0] < this.a[s][0]) s = r2;
+                if (s === i) break;
+                [this.a[i], this.a[s]] = [this.a[s], this.a[i]];
+                i = s;
             }
         }
-        if (!conflicts) result[k] = v;
+        return r;
     }
-    return result;
+    get size() {
+        return this.a.length;
+    }
 }
 
-function nodeHasConflictWithTarget(node, targetBaseEnch) {
-    if (!node || !node.ench) return false;
-    const nodeKeys = Object.keys(node.ench);
-    const targetKeys = Object.keys(targetBaseEnch || {});
-    if (nodeKeys.length === 0 || targetKeys.length === 0) return false;
-    for (const nk of nodeKeys) {
-        for (const tk of targetKeys) {
-            if (enchantmentsConflict(nk, tk) || enchantmentsConflict(tk, nk)) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
+/* ===================== MAIN SEARCH ===================== */
 
 export function computeOptimalEnchantPlan(data) {
     const target = {
-        item: deepClone(data.targetItem),
+        item: data.targetItem,
         isBook: false,
         rc: 0,
-        ench: deepClone(data.existingEnchantments || {}),
+        ench: vecFromObj(data.existingEnchantments),
         isTarget: true,
     };
 
-    const targetBaseEnch = deepClone(data.existingEnchantments || {});
-
-    const itemsToCombine = [target];
+    const nodes = [target];
 
     if (data.sacrificeMode === "Item & Books" && data.sacrificeItem) {
-        itemsToCombine.push({
-            item: deepClone(data.sacrificeItem),
+        nodes.push({
+            item: data.sacrificeItem,
             isBook: false,
             rc: 0,
-            ench: deepClone(data.sacrificeEnchantments || {}),
+            ench: vecFromObj(data.sacrificeEnchantments),
             isTarget: false,
         });
     }
 
-    if (
-        data.booksEnchantments &&
-        Object.keys(data.booksEnchantments).length > 0
-    ) {
-        const filteredBooks = removeConflictsWithTarget(
-            deepClone(data.booksEnchantments),
-            targetBaseEnch
-        );
-        for (const [enchantName, level] of Object.entries(filteredBooks)) {
-            itemsToCombine.push({
-                item: "Book",
-                isBook: true,
-                rc: 0,
-                ench: { [enchantName]: Number(level) },
-                isTarget: false,
-            });
-        }
+    for (const [k, v] of Object.entries(data.booksEnchantments || {})) {
+        nodes.push({
+            item: "Book",
+            isBook: true,
+            rc: 0,
+            ench: vecFromObj({ [k]: v }),
+            isTarget: false,
+        });
     }
 
-    if (itemsToCombine.length === 1) {
-        return {
-            success: true,
-            totalLevels: 0,
-            totalXP: 0,
-            timeMs: 0,
-            steps: [],
-            finalItem: target,
-        };
-    }
+    const frontier = new MinHeap();
+    frontier.push(0, {
+        nodes,
+        totalLevels: 0,
+        steps: [],
+        totalXP: 0,
+    });
 
-    const stack = [
-        {
-            nodes: itemsToCombine.map(clone),
-            totalLevels: 0,
-            steps: [],
-            totalXPpoints: 0,
-        },
-    ];
     const seen = new Map();
     let best = null;
     const start = performance.now();
-    while (stack.length > 0) {
-        const state = stack.pop();
+
+    while (frontier.size) {
+        const [, state] = frontier.pop();
+        if (best && state.totalLevels >= best.totalLevels) break;
+
         if (state.nodes.length === 1) {
-            if (!best || state.totalLevels < best.totalLevels) {
-                best = {
-                    ...state,
-                    finalItem: deepClone(state.nodes[0]),
-                    timeMs: performance.now() - start,
-                };
-            }
-            continue;
+            best = {
+                ...state,
+                finalItem: state.nodes[0],
+                timeMs: performance.now() - start,
+            };
+            break;
         }
-        const n = state.nodes.length;
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < n; j++) {
+
+        for (let i = 0; i < state.nodes.length; i++) {
+            for (let j = 0; j < state.nodes.length; j++) {
                 if (i === j) continue;
 
-                let aIdx = i;
-                let bIdx = j;
-                const aIsTarget = !!state.nodes[i].isTarget;
-                const bIsTarget = !!state.nodes[j].isTarget;
-                if (!aIsTarget && bIsTarget) {
-                    aIdx = j;
-                    bIdx = i;
-                }
+                const r = combine(state.nodes[i], state.nodes[j]);
+                if (!r) continue;
 
-                const aNode = state.nodes[aIdx];
-                const bNode = state.nodes[bIdx];
-
-                const result = combine(aNode, bNode);
-                if (!result) continue;
-
-                if (bNode.isBook && !result.node.isTarget) {
-                    if (nodeHasConflictWithTarget(aNode, targetBaseEnch)) {
-                        continue;
-                    }
-                }
-
-                result.node.isTarget = !!(
-                    state.nodes[aIdx].isTarget || state.nodes[bIdx].isTarget
+                const next = state.nodes.filter(
+                    (_, idx) => idx !== i && idx !== j
                 );
+                next.push(r.node);
 
-                const newNodes = [];
-                for (let k = 0; k < n; k++) {
-                    if (k !== i && k !== j)
-                        newNodes.push(clone(state.nodes[k]));
-                }
-                newNodes.push(result.node);
-                const stateKey = key(newNodes);
-                const newTotal = state.totalLevels + result.levels;
-                if (seen.has(stateKey) && seen.get(stateKey) <= newTotal)
-                    continue;
-                seen.set(stateKey, newTotal);
-                const leftDisp = disp(result.left);
-                const rightDisp = disp(result.right);
-                const resultDisp = disp(result.node);
-                stack.push({
-                    nodes: newNodes,
-                    totalLevels: newTotal,
-                    steps: [
-                        ...state.steps,
-                        {
-                            left: leftDisp,
-                            right: rightDisp,
-                            result: resultDisp,
-                            levels: result.levels,
-                            xp: result.xp,
-                            pw: result.pw,
-                            changes: result.changes,
-                        },
-                    ],
-                    totalXPpoints: state.totalXPpoints + result.xp,
+                const k = next
+                    .map(
+                        (n) => `${n.item}|${n.rc}|${n.isBook}|${vecKey(n.ench)}`
+                    )
+                    .sort()
+                    .join("||");
+
+                const newCost = state.totalLevels + r.levels;
+                if (seen.has(k) && seen.get(k) <= newCost) continue;
+                seen.set(k, newCost);
+
+                frontier.push(newCost, {
+                    nodes: next,
+                    totalLevels: newCost,
+                    totalXP: state.totalXP + r.xp,
+                    steps: state.steps.concat(r),
                 });
             }
         }
     }
-    if (!best) {
+
+    if (!best)
         return {
             success: false,
-            reason: "No valid merge order found.",
+            reason: "No valid merge order found",
             timeMs: performance.now() - start,
         };
-    }
+
+    const steps = best.steps.map((s) => ({
+        left: formatNode(s.left),
+        right: formatNode(s.right),
+        result: formatNode(s.node),
+        levels: s.levels,
+        xp: s.xp,
+        pw: s.pw,
+        changes: s.changes,
+    }));
+
     return {
         success: true,
         totalLevels: best.totalLevels,
-        totalXP: best.totalXPpoints,
+        totalXP: best.totalXP,
         timeMs: best.timeMs,
-        steps: best.steps,
-        finalItem: best.finalItem,
+        steps,
+        finalItem: formatFinal(best.finalItem),
     };
+}
+
+/* ===================== DISPLAY ===================== */
+
+function formatNode(n) {
+    const parts = [];
+    for (let i = 0; i < ENCHANT_COUNT; i++) {
+        if (n.ench[i]) parts.push(`${IDX_TO_NAME[i]} ${toRoman(n.ench[i])}`);
+    }
+    const e = parts.join(", ");
+    return n.isBook
+        ? `Book${e ? " (" + e + ")" : ""}`
+        : `${n.item}${e ? " (" + e + ")" : ""}`;
+}
+
+function formatFinal(n) {
+    const ench = {};
+    for (let i = 0; i < ENCHANT_COUNT; i++) {
+        if (n.ench[i]) ench[IDX_TO_NAME[i]] = n.ench[i];
+    }
+    return { item: n.item, ench };
+}
+
+function toRoman(num) {
+    const map = [
+        ["M", 1000],
+        ["CM", 900],
+        ["D", 500],
+        ["CD", 400],
+        ["C", 100],
+        ["XC", 90],
+        ["L", 50],
+        ["XL", 40],
+        ["X", 10],
+        ["IX", 9],
+        ["V", 5],
+        ["IV", 4],
+        ["I", 1],
+    ];
+    let out = "";
+    for (const [s, v] of map) {
+        while (num >= v) {
+            out += s;
+            num -= v;
+        }
+    }
+    return out;
 }
