@@ -616,7 +616,12 @@ const App = () => {
                                                     if none)
                                                 </span>
                                             </label>
-
+                                            <span className="note">
+                                                Existing enchantments only
+                                                supported for items from
+                                                loot/enchanting tables/villager
+                                                trades/fishing.
+                                            </span>
                                             {existingEnchantsChecked && (
                                                 <div className="existing-enchants-grid">
                                                     <div className="existing-enchants-title">
