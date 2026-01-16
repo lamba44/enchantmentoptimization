@@ -50,7 +50,7 @@ const App = () => {
         try {
             workerRef.current = new Worker(
                 new URL("./enchantWorker.js", import.meta.url),
-                { type: "module" }
+                { type: "module" },
             );
 
             workerRef.current.onmessage = (ev) => {
@@ -69,8 +69,9 @@ const App = () => {
                     try {
                         reject(
                             new Error(
-                                "Worker error: " + (err?.message || String(err))
-                            )
+                                "Worker error: " +
+                                    (err?.message || String(err)),
+                            ),
                         );
                     } catch {}
                 });
@@ -80,7 +81,7 @@ const App = () => {
             // Worker couldn't be created — fallback will run on main thread
             console.warn(
                 "Could not create worker; falling back to main-thread compute.",
-                e
+                e,
             );
             workerRef.current = null;
         }
@@ -225,7 +226,7 @@ const App = () => {
             Object.keys(targetItemEnchants).length === 0
         ) {
             setErrorMessage(
-                "Error: No existing enchantments selected for target item."
+                "Error: No existing enchantments selected for target item.",
             );
             return;
         }
@@ -246,7 +247,7 @@ const App = () => {
             const hasBooks = Object.keys(sacBooksEnchants).length > 0;
             if (!hasSacrificeEnchants && !hasBooks) {
                 setErrorMessage(
-                    "Error: No sacrifice enchantments or books selected."
+                    "Error: No sacrifice enchantments or books selected.",
                 );
                 return;
             }
@@ -273,8 +274,8 @@ const App = () => {
                 sacMode === "Books"
                     ? sacBooksEnchants
                     : sacMode === "Item & Books"
-                    ? sacBooksEnchants
-                    : {},
+                      ? sacBooksEnchants
+                      : {},
             // edition remains available in data and is used by worker/fallback
             edition,
         };
@@ -326,7 +327,7 @@ const App = () => {
         }
 
         let output = `Optimal solution found in ${result.timeMs.toFixed(
-            2
+            2,
         )} ms\n`;
         output += `Total cost: ${result.totalLevels} levels (${result.totalXP} XP)\n\n`;
         output += "Steps:\n";
@@ -497,6 +498,7 @@ const App = () => {
                                     "Carrot on a Stick",
                                     "Warped Fungus on a Stick",
                                     "Pumpkin",
+                                    "Compass",
                                 ],
                             };
 
@@ -575,7 +577,7 @@ const App = () => {
                                                             selectedSub === sub
                                                         ) {
                                                             setSelectedSub(
-                                                                null
+                                                                null,
                                                             );
                                                         } else {
                                                             setSelectedSub(sub);
@@ -597,16 +599,16 @@ const App = () => {
                                                     }
                                                     onChange={(e) => {
                                                         setExistingEnchantsChecked(
-                                                            e.target.checked
+                                                            e.target.checked,
                                                         );
                                                         if (!e.target.checked) {
                                                             setTargetItemEnchants(
-                                                                {}
+                                                                {},
                                                             );
                                                         }
                                                         setErrorMessage("");
                                                         setCalculationResult(
-                                                            null
+                                                            null,
                                                         );
                                                     }}
                                                 />
@@ -641,7 +643,7 @@ const App = () => {
                                                                     !selectedLevel &&
                                                                     hasConflict(
                                                                         ench.name,
-                                                                        targetItemEnchants
+                                                                        targetItemEnchants,
                                                                     );
                                                                 const isActive =
                                                                     !!selectedLevel;
@@ -664,13 +666,13 @@ const App = () => {
                                                                             handleToggle(
                                                                                 ench.name,
                                                                                 setTargetItemEnchants,
-                                                                                targetItemEnchants
+                                                                                targetItemEnchants,
                                                                             );
                                                                             setErrorMessage(
-                                                                                ""
+                                                                                "",
                                                                             );
                                                                             setCalculationResult(
-                                                                                null
+                                                                                null,
                                                                             );
                                                                         }}
                                                                     >
@@ -696,13 +698,13 @@ const App = () => {
                                                                                     },
                                                                                     (
                                                                                         _,
-                                                                                        i
+                                                                                        i,
                                                                                     ) =>
                                                                                         i +
-                                                                                        1
+                                                                                        1,
                                                                                 ).map(
                                                                                     (
-                                                                                        lvl
+                                                                                        lvl,
                                                                                     ) => (
                                                                                         <button
                                                                                             key={
@@ -715,20 +717,20 @@ const App = () => {
                                                                                                     : ""
                                                                                             }`}
                                                                                             onClick={(
-                                                                                                e
+                                                                                                e,
                                                                                             ) => {
                                                                                                 e.stopPropagation();
                                                                                                 handleSetEnchantLevel(
                                                                                                     ench.name,
                                                                                                     lvl,
                                                                                                     setTargetItemEnchants,
-                                                                                                    targetItemEnchants
+                                                                                                    targetItemEnchants,
                                                                                                 );
                                                                                                 setErrorMessage(
-                                                                                                    ""
+                                                                                                    "",
                                                                                                 );
                                                                                                 setCalculationResult(
-                                                                                                    null
+                                                                                                    null,
                                                                                                 );
                                                                                             }}
                                                                                         >
@@ -736,13 +738,13 @@ const App = () => {
                                                                                                 lvl
                                                                                             }
                                                                                         </button>
-                                                                                    )
+                                                                                    ),
                                                                                 )}
                                                                             </div>
                                                                         )}
                                                                     </div>
                                                                 );
-                                                            }
+                                                            },
                                                         )}
                                                     </div>
                                                 </div>
@@ -790,16 +792,16 @@ const App = () => {
                                                             onClick={() => {
                                                                 setSacMode(m);
                                                                 setErrorMessage(
-                                                                    ""
+                                                                    "",
                                                                 );
                                                                 setCalculationResult(
-                                                                    null
+                                                                    null,
                                                                 );
                                                             }}
                                                         >
                                                             {m}
                                                         </button>
-                                                    )
+                                                    ),
                                                 )}
                                             </div>
 
@@ -830,7 +832,7 @@ const App = () => {
                                                                     !selectedLevel &&
                                                                     hasConflict(
                                                                         ench.name,
-                                                                        sacBooksEnchants
+                                                                        sacBooksEnchants,
                                                                     );
                                                                 const isActive =
                                                                     !!selectedLevel;
@@ -853,13 +855,13 @@ const App = () => {
                                                                             handleToggle(
                                                                                 ench.name,
                                                                                 setSacBooksEnchants,
-                                                                                sacBooksEnchants
+                                                                                sacBooksEnchants,
                                                                             );
                                                                             setErrorMessage(
-                                                                                ""
+                                                                                "",
                                                                             );
                                                                             setCalculationResult(
-                                                                                null
+                                                                                null,
                                                                             );
                                                                         }}
                                                                     >
@@ -885,13 +887,13 @@ const App = () => {
                                                                                     },
                                                                                     (
                                                                                         _,
-                                                                                        i
+                                                                                        i,
                                                                                     ) =>
                                                                                         i +
-                                                                                        1
+                                                                                        1,
                                                                                 ).map(
                                                                                     (
-                                                                                        lvl
+                                                                                        lvl,
                                                                                     ) => (
                                                                                         <button
                                                                                             key={
@@ -904,20 +906,20 @@ const App = () => {
                                                                                                     : ""
                                                                                             }`}
                                                                                             onClick={(
-                                                                                                e
+                                                                                                e,
                                                                                             ) => {
                                                                                                 e.stopPropagation();
                                                                                                 handleSetEnchantLevel(
                                                                                                     ench.name,
                                                                                                     lvl,
                                                                                                     setSacBooksEnchants,
-                                                                                                    sacBooksEnchants
+                                                                                                    sacBooksEnchants,
                                                                                                 );
                                                                                                 setErrorMessage(
-                                                                                                    ""
+                                                                                                    "",
                                                                                                 );
                                                                                                 setCalculationResult(
-                                                                                                    null
+                                                                                                    null,
                                                                                                 );
                                                                                             }}
                                                                                         >
@@ -925,13 +927,13 @@ const App = () => {
                                                                                                 lvl
                                                                                             }
                                                                                         </button>
-                                                                                    )
+                                                                                    ),
                                                                                 )}
                                                                             </div>
                                                                         )}
                                                                     </div>
                                                                 );
-                                                            }
+                                                            },
                                                         )}
                                                     </div>
                                                 </div>
@@ -966,7 +968,7 @@ const App = () => {
                                                                         !selectedLevel &&
                                                                         hasConflict(
                                                                             ench.name,
-                                                                            sacItemEnchants
+                                                                            sacItemEnchants,
                                                                         );
                                                                     const isActive =
                                                                         !!selectedLevel;
@@ -989,13 +991,13 @@ const App = () => {
                                                                                 handleToggle(
                                                                                     ench.name,
                                                                                     setSacItemEnchants,
-                                                                                    sacItemEnchants
+                                                                                    sacItemEnchants,
                                                                                 );
                                                                                 setErrorMessage(
-                                                                                    ""
+                                                                                    "",
                                                                                 );
                                                                                 setCalculationResult(
-                                                                                    null
+                                                                                    null,
                                                                                 );
                                                                             }}
                                                                         >
@@ -1021,13 +1023,13 @@ const App = () => {
                                                                                         },
                                                                                         (
                                                                                             _,
-                                                                                            i
+                                                                                            i,
                                                                                         ) =>
                                                                                             i +
-                                                                                            1
+                                                                                            1,
                                                                                     ).map(
                                                                                         (
-                                                                                            lvl
+                                                                                            lvl,
                                                                                         ) => (
                                                                                             <button
                                                                                                 key={
@@ -1040,20 +1042,20 @@ const App = () => {
                                                                                                         : ""
                                                                                                 }`}
                                                                                                 onClick={(
-                                                                                                    e
+                                                                                                    e,
                                                                                                 ) => {
                                                                                                     e.stopPropagation();
                                                                                                     handleSetEnchantLevel(
                                                                                                         ench.name,
                                                                                                         lvl,
                                                                                                         setSacItemEnchants,
-                                                                                                        sacItemEnchants
+                                                                                                        sacItemEnchants,
                                                                                                     );
                                                                                                     setErrorMessage(
-                                                                                                        ""
+                                                                                                        "",
                                                                                                     );
                                                                                                     setCalculationResult(
-                                                                                                        null
+                                                                                                        null,
                                                                                                     );
                                                                                                 }}
                                                                                             >
@@ -1061,13 +1063,13 @@ const App = () => {
                                                                                                     lvl
                                                                                                 }
                                                                                             </button>
-                                                                                        )
+                                                                                        ),
                                                                                     )}
                                                                                 </div>
                                                                             )}
                                                                         </div>
                                                                     );
-                                                                }
+                                                                },
                                                             )}
                                                         </div>
                                                     </div>
@@ -1091,7 +1093,7 @@ const App = () => {
                                                                         !selectedLevel &&
                                                                         hasConflict(
                                                                             ench.name,
-                                                                            sacBooksEnchants
+                                                                            sacBooksEnchants,
                                                                         );
                                                                     const isActive =
                                                                         !!selectedLevel;
@@ -1114,13 +1116,13 @@ const App = () => {
                                                                                 handleToggle(
                                                                                     ench.name,
                                                                                     setSacBooksEnchants,
-                                                                                    sacBooksEnchants
+                                                                                    sacBooksEnchants,
                                                                                 );
                                                                                 setErrorMessage(
-                                                                                    ""
+                                                                                    "",
                                                                                 );
                                                                                 setCalculationResult(
-                                                                                    null
+                                                                                    null,
                                                                                 );
                                                                             }}
                                                                         >
@@ -1146,13 +1148,13 @@ const App = () => {
                                                                                         },
                                                                                         (
                                                                                             _,
-                                                                                            i
+                                                                                            i,
                                                                                         ) =>
                                                                                             i +
-                                                                                            1
+                                                                                            1,
                                                                                     ).map(
                                                                                         (
-                                                                                            lvl
+                                                                                            lvl,
                                                                                         ) => (
                                                                                             <button
                                                                                                 key={
@@ -1165,20 +1167,20 @@ const App = () => {
                                                                                                         : ""
                                                                                                 }`}
                                                                                                 onClick={(
-                                                                                                    e
+                                                                                                    e,
                                                                                                 ) => {
                                                                                                     e.stopPropagation();
                                                                                                     handleSetEnchantLevel(
                                                                                                         ench.name,
                                                                                                         lvl,
                                                                                                         setSacBooksEnchants,
-                                                                                                        sacBooksEnchants
+                                                                                                        sacBooksEnchants,
                                                                                                     );
                                                                                                     setErrorMessage(
-                                                                                                        ""
+                                                                                                        "",
                                                                                                     );
                                                                                                     setCalculationResult(
-                                                                                                        null
+                                                                                                        null,
                                                                                                     );
                                                                                                 }}
                                                                                             >
@@ -1186,13 +1188,13 @@ const App = () => {
                                                                                                     lvl
                                                                                                 }
                                                                                             </button>
-                                                                                        )
+                                                                                        ),
                                                                                     )}
                                                                                 </div>
                                                                             )}
                                                                         </div>
                                                                     );
-                                                                }
+                                                                },
                                                             )}
                                                         </div>
                                                     </div>
@@ -1242,7 +1244,7 @@ const App = () => {
                                         <div className="calc-time">
                                             Calculation time:{" "}
                                             {calculationResult.timeMs.toFixed(
-                                                2
+                                                2,
                                             )}{" "}
                                             ms
                                         </div>
@@ -1259,7 +1261,7 @@ const App = () => {
                                             <div className="summary-header">
                                                 Solution Found in{" "}
                                                 {calculationResult.timeMs.toFixed(
-                                                    2
+                                                    2,
                                                 )}{" "}
                                                 ms
                                             </div>
@@ -1288,16 +1290,16 @@ const App = () => {
                                                             <div className="item-box">
                                                                 <div className="item-name">
                                                                     {extractItemName(
-                                                                        step.left
+                                                                        step.left,
                                                                     )}
                                                                 </div>
                                                                 <div className="item-enchantments">
                                                                     {extractEnchantments(
-                                                                        step.left
+                                                                        step.left,
                                                                     ).map(
                                                                         (
                                                                             ench,
-                                                                            i
+                                                                            i,
                                                                         ) => (
                                                                             <div
                                                                                 key={
@@ -1309,7 +1311,7 @@ const App = () => {
                                                                                     ench
                                                                                 }
                                                                             </div>
-                                                                        )
+                                                                        ),
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -1319,16 +1321,16 @@ const App = () => {
                                                             <div className="item-box">
                                                                 <div className="item-name">
                                                                     {extractItemName(
-                                                                        step.right
+                                                                        step.right,
                                                                     )}
                                                                 </div>
                                                                 <div className="item-enchantments">
                                                                     {extractEnchantments(
-                                                                        step.right
+                                                                        step.right,
                                                                     ).map(
                                                                         (
                                                                             ench,
-                                                                            i
+                                                                            i,
                                                                         ) => (
                                                                             <div
                                                                                 key={
@@ -1340,7 +1342,7 @@ const App = () => {
                                                                                     ench
                                                                                 }
                                                                             </div>
-                                                                        )
+                                                                        ),
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -1352,16 +1354,16 @@ const App = () => {
                                                             <div className="item-box result-item">
                                                                 <div className="item-name">
                                                                     {extractItemName(
-                                                                        step.result
+                                                                        step.result,
                                                                     )}
                                                                 </div>
                                                                 <div className="item-enchantments">
                                                                     {extractEnchantments(
-                                                                        step.result
+                                                                        step.result,
                                                                     ).map(
                                                                         (
                                                                             ench,
-                                                                            i
+                                                                            i,
                                                                         ) => (
                                                                             <div
                                                                                 key={
@@ -1373,7 +1375,7 @@ const App = () => {
                                                                                     ench
                                                                                 }
                                                                             </div>
-                                                                        )
+                                                                        ),
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -1399,7 +1401,7 @@ const App = () => {
                                                             )}
                                                         </div>
                                                     </div>
-                                                )
+                                                ),
                                             )
                                         )}
 
@@ -1411,15 +1413,15 @@ const App = () => {
                                                 <div className="item-name">
                                                     {extractItemName(
                                                         formatFinalItem(
-                                                            calculationResult.finalItem
-                                                        )
+                                                            calculationResult.finalItem,
+                                                        ),
                                                     )}
                                                 </div>
                                                 <div className="item-enchantments">
                                                     {extractEnchantments(
                                                         formatFinalItem(
-                                                            calculationResult.finalItem
-                                                        )
+                                                            calculationResult.finalItem,
+                                                        ),
                                                     ).map((ench, i) => (
                                                         <div
                                                             key={i}

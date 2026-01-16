@@ -211,6 +211,7 @@ export const itemEnchantMap = {
         { name: "Curse of Binding", max: 1 },
         { name: "Curse of Vanishing", max: 1 },
     ],
+    Compass: [{ name: "Curse of Vanishing", max: 1 }],
 };
 
 // Conflict map for enchantments
