@@ -35,5 +35,3 @@ Just open the site, input your enchantments, and get the best possible result.
 2. Enter the enchantments you want to apply
 3. View the optimal order and total cost
 4. Apply it in-game with confidence
-
-A screenshot of the tool in action is included below.
