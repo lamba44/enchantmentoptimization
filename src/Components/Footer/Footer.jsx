@@ -27,7 +27,7 @@ const Footer = () => {
 
                 <p className="footerbot">
                     <a
-                        href="https://github.com/lamba44"
+                        href="https://github.com/lamba44/enchantmentoptimization"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
