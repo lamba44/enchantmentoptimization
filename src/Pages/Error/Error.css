@@ -1,0 +1,25 @@
+.errorpage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 50vh;
+}
+
+.errorpage h1 {
+    text-align: center;
+    font-size: 108px;
+    font-weight: 500;
+}
+
+@media (max-width: 1140px) {
+    .errorpage h1 {
+        font-size: 72px;
+    }
+}
+
+@media (max-width: 767px) {
+    .errorpage h1 {
+        font-size: 44px;
+    }
+}
