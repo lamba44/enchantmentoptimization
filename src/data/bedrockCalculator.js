@@ -1,6 +1,3 @@
-// src/data/bedrockCalculator.js
-// Optimized Bedrock Edition enchant calculator (drop-in replacement)
-
 import { enchantmentsConflict, itemEnchantMap } from "./enchantmentData";
 
 /* ===================== PRECOMPUTATION ===================== */
@@ -313,13 +310,14 @@ export function computeOptimalEnchantPlan(data) {
                 if (!r) continue;
 
                 const next = state.nodes.filter(
-                    (_, idx) => idx !== i && idx !== j
+                    (_, idx) => idx !== i && idx !== j,
                 );
                 next.push(r.node);
 
                 const k = next
                     .map(
-                        (n) => `${n.item}|${n.rc}|${n.isBook}|${vecKey(n.ench)}`
+                        (n) =>
+                            `${n.item}|${n.rc}|${n.isBook}|${vecKey(n.ench)}`,
                     )
                     .sort()
                     .join("||");

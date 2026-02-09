@@ -5,6 +5,8 @@ A simple web tool to help you find the most optimal enchantment combinations for
 **Check it Out:**  
 https://enchantmentoptimization.vercel.app/
 
+Support for multiple languages and contribution guide coming soon!
+
 ![Enchantment Optimization Tool](/src/assets/images/HomeScreen.webp)
 
 ## What this does

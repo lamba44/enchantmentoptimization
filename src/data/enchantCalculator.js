@@ -1,5 +1,3 @@
-// src/data/enchantCalculator.js
-// Optimized Java Edition calculator — drop-in replacement for your existing API
 import { enchantmentsConflict, itemEnchantMap } from "./enchantmentData";
 
 /* -------------------- Utilities & Precomputation -------------------- */
@@ -181,7 +179,7 @@ function combineTyped(left, right) {
         if (!lvB) continue;
         const lvA = rVec[ei] || 0;
         const enchantName = [...ENCHANT_INDEX.map.entries()].find(
-            ([, i]) => i === ei
+            ([, i]) => i === ei,
         )?.[0]; // slow if used here frequently — but we only need name for multiplier lookup
         // to avoid the above slow lookup per loop, build an index->name array once
     }
